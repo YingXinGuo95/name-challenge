@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cacheGet, cacheSet } from "@/lib/cache";
+import { cacheGet, cacheSet } from "@/app/challenges/name-100-women/_lib/cache";
 import {
   buildValidationQuery,
   WIKIDATA_SPARQL_ENDPOINT,
   USER_AGENT,
-} from "@/lib/sparql";
-import { SparqlResponse, ValidateResponse } from "@/types";
+} from "@/app/challenges/name-100-women/_lib/sparql";
+import { SparqlResponse, ValidateResponse } from "@/app/challenges/name-100-women/_lib/types";
 import logger from "@/lib/logger";
-import { localLookup } from "@/data/famous-women";
+import { localLookup } from "@/app/challenges/name-100-women/_lib/famous-women";
 
 // ── Rate Limiting (simple in-memory) ────────────────────────────────
 

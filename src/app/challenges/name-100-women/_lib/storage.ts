@@ -1,4 +1,4 @@
-import { GameState } from "@/types";
+import { GameState } from "@/app/challenges/name-100-women/_lib/types";
 
 const STORAGE_KEY = "name100women_v1";
 

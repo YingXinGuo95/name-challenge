@@ -1,4 +1,4 @@
-import { CacheEntry } from "@/types";
+import { CacheEntry } from "@/app/challenges/name-100-women/_lib/types";
 
 const cache: Map<string, CacheEntry> = new Map();
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms

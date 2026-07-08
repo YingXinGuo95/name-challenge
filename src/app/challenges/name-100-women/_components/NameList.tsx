@@ -1,6 +1,6 @@
 "use client";
 
-import { ValidatedName } from "@/types";
+import { ValidatedName } from "@/app/challenges/name-100-women/_lib/types";
 import { Check, X, AlertTriangle } from "lucide-react";
 
 interface NameListProps {
