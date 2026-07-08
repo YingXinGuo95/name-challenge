@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import challenges from "@/data/challenges";
 import { ArrowRight } from "lucide-react";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default function HomePage() {
   return (

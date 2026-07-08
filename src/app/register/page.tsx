@@ -1,4 +1,17 @@
+import type { Metadata } from "next";
 import { RegisterForm } from "@/components/auth/RegisterForm";
+
+export const metadata: Metadata = {
+  title: "Register",
+  description: "Create a free Name 100 Challenge account and start tracking your naming achievements.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  alternates: {
+    canonical: "/register",
+  },
+};
 
 export default function RegisterPage() {
   return (

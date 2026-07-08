@@ -10,6 +10,7 @@ export function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="font-extrabold uppercase underline decoration-[#2D2D2D] underline-offset-2 hover:text-[#2D2D2D]"
+              aria-label="Wikidata — free and open knowledge base"
             >
               Wikidata
             </a>

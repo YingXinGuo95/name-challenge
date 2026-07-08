@@ -1,4 +1,17 @@
+import type { Metadata } from "next";
 import { LoginForm } from "@/components/auth/LoginForm";
+
+export const metadata: Metadata = {
+  title: "Login",
+  description: "Sign in to your Name 100 Challenge account to track your progress.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  alternates: {
+    canonical: "/login",
+  },
+};
 
 export default function LoginPage() {
   return (
