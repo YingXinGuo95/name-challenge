@@ -4,8 +4,8 @@
  */
 const config = {
   /** Number of correct names required to complete the challenge. */
-  //targetCount: 100,
-  targetCount: 3,
+  targetCount: 100,
+  //targetCount: 3,
 
   /**
    * Data source for name validation.
@@ -13,8 +13,8 @@ const config = {
    * - "wikidata"  → try Wikidata SPARQL first, fall back to local dataset on network error
    * - "local"     → use only the built-in local dataset (instant, no network)
    */
-  //dataSource: "wikidata" as "wikidata" | "local",
-  dataSource: "local",
+  dataSource: "wikidata",
+  //dataSource: "local",
 };
 
 export default config;
