@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { GameInput } from "./_components/GameInput";
 import { NameList } from "./_components/NameList";
 import { ProgressBar } from "./_components/ProgressBar";
 import { CompletionScreen } from "./_components/CompletionScreen";
-import { loadGameState, saveGameState, clearGameState, findDuplicate } from "./_lib/storage";
+import { findDuplicate } from "./_lib/storage";
 import { GameState, ValidateResponse, ValidatedName } from "./_lib/types";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Timer } from "lucide-react";
 
 const TOTAL = 100;
 
@@ -17,24 +17,30 @@ const EMPTY_STATE: GameState = {
   count: 0,
 };
 
-export default function HomePage() {
+function formatTimer(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+export default function ChallengePage() {
   const [gameState, setGameState] = useState<GameState>(EMPTY_STATE);
-  const [isHydrated, setIsHydrated] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Hydrate from localStorage after mount (avoid SSR mismatch)
+  // Live timer — starts ticking when first valid name is entered
   useEffect(() => {
-    setGameState(loadGameState());
-    setIsHydrated(true);
-  }, []);
-
-  // Persist game state on every change (skip before hydration)
-  useEffect(() => {
-    if (isHydrated) {
-      saveGameState(gameState);
+    if (gameState.startTime > 0) {
+      timerRef.current = setInterval(() => {
+        setElapsed(Math.floor((Date.now() - gameState.startTime) / 1000));
+      }, 200);
     }
-  }, [gameState, isHydrated]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [gameState.startTime]);
 
   const hasCompleted = gameState.count >= TOTAL;
 
@@ -48,7 +54,6 @@ export default function HomePage() {
         const entry: ValidatedName = {
           input: name,
           valid: false,
-          // No reason = duplicate marker
         };
         setGameState((prev) => ({
           ...prev,
@@ -108,12 +113,9 @@ export default function HomePage() {
   );
 
   const handleRestart = useCallback(() => {
-    clearGameState();
-    setGameState({
-      startTime: 0,
-      validatedNames: [],
-      count: 0,
-    });
+    if (timerRef.current) clearInterval(timerRef.current);
+    setGameState(EMPTY_STATE);
+    setElapsed(0);
     setError(null);
   }, []);
 
@@ -159,8 +161,25 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Progress */}
-      <ProgressBar current={gameState.count} total={TOTAL} />
+      {/* Progress + Timer */}
+      <div className="w-full max-w-xl space-y-3">
+        <ProgressBar current={gameState.count} total={TOTAL} />
+
+        {/* Timer */}
+        <div className="flex items-center justify-center">
+          <div
+            className={`inline-flex items-center gap-2 rounded-full border-[2.5px] border-[#2D2D2D] bg-white px-5 py-2 transition-opacity ${
+              gameState.startTime > 0 ? "opacity-100" : "opacity-40"
+            }`}
+            style={{ boxShadow: "2px 3px 0 rgba(0,0,0,0.06)" }}
+          >
+            <Timer className="h-4 w-4 text-[#2D2D2D]" />
+            <span className="text-lg font-extrabold tabular-nums tracking-wide text-[#2D2D2D]">
+              {formatTimer(elapsed)}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Name List */}
       <NameList names={gameState.validatedNames} />
