@@ -15,6 +15,7 @@ import {
   LeaderboardLoading,
   LeaderboardError,
 } from "@/components/leaderboard/Leaderboard";
+import { createClient } from "@/lib/supabase/client";
 import type { LeaderboardEntry, LeaderboardSubmitResponse, LeaderboardGetResponse } from "@/lib/leaderboard/types";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -63,10 +64,13 @@ export function CompletionScreen({
   const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
   const [leaderboardError, setLeaderboardError] = useState(false);
-  const [isShaking, setIsShaking] = useState(false);
+  const alreadySubmitted = hasSubmittedScore();
 
   const elapsed = formatElapsed(elapsedSeconds);
-  const alreadySubmitted = hasSubmittedScore();
+
+  const [isShaking, setIsShaking] = useState(false);
+  const [isCheckingRank, setIsCheckingRank] = useState(!alreadySubmitted);
+  const [currentRank, setCurrentRank] = useState<number | null>(null);
 
   // Confetti on mount
   useEffect(() => {
@@ -112,6 +116,41 @@ export function CompletionScreen({
       fetchLeaderboard();
     }
   }, [screenState]);
+
+  // Check if user's time ranks in the top 100
+  useEffect(() => {
+    if (alreadySubmitted) return;
+
+    let cancelled = false;
+    async function checkRank() {
+      try {
+        const supabase = createClient();
+        const { count, error: countError } = await supabase
+          .from("leaderboard")
+          .select("*", { count: "exact", head: true })
+          .eq("challenge_slug", challengeSlug)
+          .eq("score", targetCount)
+          .lt("elapsed_seconds", elapsedSeconds);
+
+        if (countError) throw countError;
+
+        if (!cancelled) {
+          // Rank = number of people faster + 1
+          const rank = (count ?? 0) + 1;
+          setCurrentRank(rank);
+          setIsCheckingRank(false);
+        }
+      } catch {
+        // On error, allow submission (optimistic)
+        if (!cancelled) {
+          setCurrentRank(null);
+          setIsCheckingRank(false);
+        }
+      }
+    }
+    checkRank();
+    return () => { cancelled = true; };
+  }, [alreadySubmitted, challengeSlug, targetCount, elapsedSeconds]);
 
   // ── Share Handlers ───────────────────────────────────────────────
 
@@ -333,8 +372,46 @@ export function CompletionScreen({
               )}
             </button>
 
-            {/* Submit Score */}
-            {!alreadySubmitted && (
+            {/* Submit Score — only if in top 100 */}
+            {!alreadySubmitted && isCheckingRank && (
+              <button
+                disabled
+                className="inline-flex items-center gap-2 rounded-full bg-[#FF8FAB]/50 px-6 py-3 text-sm font-bold text-[#2D2D2D]/50"
+              >
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Checking rank...
+              </button>
+            )}
+
+            {!alreadySubmitted && !isCheckingRank && currentRank !== null && currentRank <= 100 && (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-sm font-bold text-[#2D2D2D]">
+                  🎉 You&apos;re in the{" "}
+                  <span className="text-base font-extrabold text-[#FF8FAB]">
+                    top {currentRank}
+                  </span>
+                  ! Submit your score now!
+                </p>
+                <button
+                  onClick={() => setScreenState("submitting")}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#FF8FAB] px-6 py-3 text-sm font-bold text-[#2D2D2D] transition-transform hover:scale-105"
+                >
+                  <Send className="h-4 w-4" />
+                  Submit Score
+                </button>
+              </div>
+            )}
+
+            {!alreadySubmitted && !isCheckingRank && currentRank !== null && currentRank > 100 && (
+              <div className="rounded-full border-[2.5px] border-[#2D2D2D]/20 bg-white px-5 py-2 text-center">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Your time is outside the top 100 — keep trying!
+                </p>
+              </div>
+            )}
+
+            {/* Fallback: rank check failed, allow submission anyway */}
+            {!alreadySubmitted && !isCheckingRank && currentRank === null && (
               <button
                 onClick={() => setScreenState("submitting")}
                 className="inline-flex items-center gap-2 rounded-full bg-[#FF8FAB] px-6 py-3 text-sm font-bold text-[#2D2D2D] transition-transform hover:scale-105"

@@ -49,7 +49,6 @@ export function LiveLeaderboard() {
         .from("leaderboard")
         .select("*")
         .eq("challenge_slug", CHALLENGE_SLUG)
-        .eq("score", 100)
         .order("elapsed_seconds", { ascending: true })
         .limit(LEADERBOARD_LIMIT);
 

@@ -96,7 +96,6 @@ export function Leaderboard({
         <div className="flex items-center gap-2 border-b-[2.5px] border-[#2D2D2D]/10 bg-[#F5E6D3]/60 px-4 py-3 text-xs font-extrabold uppercase tracking-wider text-[#2D2D2D]/60">
           <span className="w-8 text-center">#</span>
           <span className="flex-1">Nickname</span>
-          <span className="w-16 text-right">Score</span>
           <span className="w-20 text-right">Time</span>
         </div>
 
@@ -131,11 +130,6 @@ export function Leaderboard({
                   title={entry.nickname}
                 >
                   {entry.nickname}
-                </span>
-
-                {/* Score */}
-                <span className="w-16 text-right font-extrabold tabular-nums text-[#2D2D2D]">
-                  {entry.score}
                 </span>
 
                 {/* Time */}
