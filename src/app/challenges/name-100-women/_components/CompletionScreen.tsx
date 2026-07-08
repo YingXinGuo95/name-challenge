@@ -1,35 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Trophy, Share2, RotateCcw, Check } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { Trophy, Share2, RotateCcw, Check, Camera } from "lucide-react";
+import { toBlob } from "html-to-image";
 
 interface CompletionScreenProps {
-  startTime: number;
+  elapsedSeconds: number;
+  targetCount: number;
   onRestart: () => void;
 }
 
-function formatElapsed(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  if (minutes > 0) {
-    return `${minutes}m ${seconds}s`;
-  }
-  return `${seconds}s`;
+function formatElapsed(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
 }
 
-export function CompletionScreen({ startTime, onRestart }: CompletionScreenProps) {
-  const [elapsed, setElapsed] = useState("");
+export function CompletionScreen({
+  elapsedSeconds,
+  targetCount,
+  onRestart,
+}: CompletionScreenProps) {
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    const endTime = Date.now();
-    setElapsed(formatElapsed(endTime - startTime));
-  }, [startTime]);
+  const [imageCopied, setImageCopied] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const elapsed = formatElapsed(elapsedSeconds);
 
   function buildShareText(): string {
-    return `🏆 I just named 100 famous women in ${formatElapsed(Date.now() - startTime)}!\n\nCan you beat my score? Play Name 100 Women Challenge!`;
+    return `🏆 I just named ${targetCount} famous women in ${elapsed}!\n\nCan you beat my score? Play Name 100 Women Challenge!`;
   }
 
   async function handleShare() {
@@ -47,29 +46,105 @@ export function CompletionScreen({ startTime, onRestart }: CompletionScreenProps
     }
   }
 
+  const handleCopyImage = useCallback(async () => {
+    if (!cardRef.current) return;
+
+    try {
+      const blob = await toBlob(cardRef.current, {
+        backgroundColor: "#F5E6D3",
+        pixelRatio: 2,
+      });
+
+      if (!blob) {
+        alert("Failed to capture image. Please try again.");
+        return;
+      }
+
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob }),
+      ]);
+
+      setImageCopied(true);
+      setTimeout(() => setImageCopied(false), 2000);
+    } catch {
+      // Fallback: download the image if clipboard API fails
+      try {
+        if (!cardRef.current) return;
+        const blob = await toBlob(cardRef.current, {
+          backgroundColor: "#F5E6D3",
+          pixelRatio: 2,
+        });
+        if (!blob) return;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "name-100-women-result.png";
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch {
+        // silently fail
+      }
+    }
+  }, []);
+
   return (
-    <div className="retro-card flex w-full max-w-xl flex-col items-center gap-6 bg-white px-8 py-10 text-center">
-      {/* Trophy icon in white rounded-square box with black border */}
-      <div className="retro-btn h-16 w-16 !rounded-2xl">
-        <Trophy className="h-8 w-8" />
+    <div
+      ref={cardRef}
+      className="flex w-full max-w-md flex-col items-center gap-6 rounded-[48px] border-4 border-gray-900 bg-white px-8 py-10 text-center shadow-[0_8px_24px_rgba(0,0,0,0.15),inset_0_4px_8px_rgba(255,255,255,0.8)]"
+    >
+      {/* Trophy icon — warm circular bg */}
+      <div className="flex h-14 w-14 items-center justify-center rounded-full border border-gray-300 bg-[#FFF8E7]">
+        <Trophy className="h-6 w-6 text-gray-700" />
       </div>
 
+      {/* Time — hero focal point */}
       <div className="space-y-2">
-        <h2 className="text-3xl font-extrabold uppercase tracking-tight text-[#2D2D2D]">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
+          Your Time
+        </p>
+        <div className="inline-block rounded-2xl bg-[#FFF8E7] px-8 py-3">
+          <span className="text-6xl font-black tabular-nums text-gray-900">
+            {elapsed}
+          </span>
+        </div>
+      </div>
+
+      {/* Title + detail */}
+      <div className="space-y-1.5">
+        <h2 className="text-xl font-bold uppercase tracking-wide text-gray-800">
           Challenge Complete!
         </h2>
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="text-sm text-gray-600">
           You named{" "}
-          <span className="font-extrabold uppercase text-[#2D2D2D]">100 famous women</span>{" "}
-          in{" "}
-          <span className="font-extrabold uppercase text-[#2D2D2D]">{elapsed}</span>.
+          <span className="font-bold text-red-600">{targetCount} famous women</span>.
         </p>
       </div>
 
+      {/* Buttons */}
       <div className="flex flex-wrap justify-center gap-3">
+        {/* Copy image */}
+        <button
+          onClick={handleCopyImage}
+          className="inline-flex items-center gap-2 rounded-full border-2 border-gray-800 px-5 py-3 text-sm font-bold text-gray-800 transition-transform hover:scale-105 hover:bg-gray-100"
+        >
+          {imageCopied ? (
+            <>
+              <Check className="h-4 w-4" />
+              Copied!
+            </>
+          ) : (
+            <>
+              <Camera className="h-4 w-4" />
+              Copy Image
+            </>
+          )}
+        </button>
+
+        {/* Share text */}
         <button
           onClick={handleShare}
-          className="retro-btn h-11 gap-2 px-5 text-sm"
+          className="inline-flex items-center gap-2 rounded-full border-2 border-gray-800 px-5 py-3 text-sm font-bold text-gray-800 transition-transform hover:scale-105 hover:bg-gray-100"
         >
           {copied ? (
             <>
@@ -79,13 +154,15 @@ export function CompletionScreen({ startTime, onRestart }: CompletionScreenProps
           ) : (
             <>
               <Share2 className="h-4 w-4" />
-              Share Result
+              Share Text
             </>
           )}
         </button>
+
+        {/* Play Again — solid dark */}
         <button
           onClick={onRestart}
-          className="retro-btn-dark h-11 gap-2 px-5 text-sm"
+          className="inline-flex items-center gap-2 rounded-full bg-gray-900 px-6 py-3 text-sm font-bold text-white transition-transform hover:scale-105 hover:bg-gray-800"
         >
           <RotateCcw className="h-4 w-4" />
           Play Again

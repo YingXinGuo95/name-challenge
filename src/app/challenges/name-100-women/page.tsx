@@ -8,8 +8,9 @@ import { CompletionScreen } from "./_components/CompletionScreen";
 import { findDuplicate } from "./_lib/storage";
 import { GameState, ValidateResponse, ValidatedName } from "./_lib/types";
 import { AlertCircle, Timer } from "lucide-react";
+import config from "./_lib/config";
 
-const TOTAL = 100;
+const TOTAL = config.targetCount;
 
 const EMPTY_STATE: GameState = {
   startTime: 0,
@@ -30,9 +31,11 @@ export default function ChallengePage() {
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Live timer — starts ticking when first valid name is entered
+  const hasCompleted = gameState.count >= TOTAL;
+
+  // Live timer — starts on first input, stops on completion
   useEffect(() => {
-    if (gameState.startTime > 0) {
+    if (gameState.startTime > 0 && !hasCompleted) {
       timerRef.current = setInterval(() => {
         setElapsed(Math.floor((Date.now() - gameState.startTime) / 1000));
       }, 200);
@@ -40,9 +43,7 @@ export default function ChallengePage() {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [gameState.startTime]);
-
-  const hasCompleted = gameState.count >= TOTAL;
+  }, [gameState.startTime, hasCompleted]);
 
   const handleAdd = useCallback(
     async (name: string) => {
@@ -57,6 +58,7 @@ export default function ChallengePage() {
         };
         setGameState((prev) => ({
           ...prev,
+          startTime: prev.startTime === 0 ? Date.now() : prev.startTime,
           validatedNames: [...prev.validatedNames, entry],
         }));
         return;
@@ -93,7 +95,7 @@ export default function ChallengePage() {
           const newNames = [...prev.validatedNames, entry];
           const newCount = data.valid ? prev.count + 1 : prev.count;
           const startTime =
-            prev.startTime === 0 && data.valid ? Date.now() : prev.startTime;
+            prev.startTime === 0 ? Date.now() : prev.startTime;
 
           return {
             startTime,
@@ -124,7 +126,8 @@ export default function ChallengePage() {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <CompletionScreen
-          startTime={gameState.startTime}
+          elapsedSeconds={elapsed}
+          targetCount={TOTAL}
           onRestart={handleRestart}
         />
       </div>

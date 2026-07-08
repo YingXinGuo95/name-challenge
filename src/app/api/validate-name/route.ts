@@ -8,6 +8,7 @@ import {
 import { SparqlResponse, ValidateResponse } from "@/app/challenges/name-100-women/_lib/types";
 import logger from "@/lib/logger";
 import { localLookup } from "@/app/challenges/name-100-women/_lib/famous-women";
+import config from "@/app/challenges/name-100-women/_lib/config";
 
 // ── Rate Limiting (simple in-memory) ────────────────────────────────
 
@@ -121,6 +122,17 @@ export async function GET(request: NextRequest) {
     const response: ValidateResponse = { valid: cached.valid };
     if (cached.qid) response.qid = cached.qid;
     return NextResponse.json(response);
+  }
+
+  // --- Local-only mode ---
+  if (config.dataSource === "local") {
+    logger.info({ name, cacheKey }, "Local-only mode");
+    const local = localLookup(name);
+    if (local) {
+      cacheSet(cacheKey, { valid: true, qid: local.qid });
+      return NextResponse.json({ valid: true, qid: local.qid });
+    }
+    return NextResponse.json({ valid: false, reason: "not_found" });
   }
 
   // --- Wikidata query (with local fallback) ---
