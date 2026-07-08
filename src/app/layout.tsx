@@ -10,16 +10,16 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Name 100 Women Challenge",
-    template: "%s | Name 100 Women",
+    default: "Name 100 Challenge",
+    template: "%s | Name 100 Challenge",
   },
   description:
-    "Can you name 100 famous women? A fun challenge verified by Wikidata — type a name and see if she's a real female public figure.",
-  keywords: ["name 100 women", "challenge", "quiz", "wikidata", "trivia"],
+    "How many famous names can you recall? A fun naming challenge verified by Wikidata — type a name and see if it counts.",
+  keywords: ["name 100 challenge", "quiz", "wikidata", "trivia", "naming game"],
   openGraph: {
-    title: "Name 100 Women Challenge",
+    title: "Name 100 Challenge",
     description:
-      "Can you name 100 famous women? A fun challenge verified by Wikidata.",
+      "How many famous names can you recall? A fun naming challenge verified by Wikidata.",
     type: "website",
   },
 };

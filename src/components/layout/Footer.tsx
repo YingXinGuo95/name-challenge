@@ -16,7 +16,7 @@ export function Footer() {
             . Licensed under CC0.
           </p>
           <p className="mt-1 text-[11px] font-medium text-muted-foreground/70">
-            © {new Date().getFullYear()} Name 100 Women Challenge
+            © {new Date().getFullYear()} Name 100 Challenge
           </p>
         </div>
       </div>

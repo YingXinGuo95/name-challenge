@@ -9,7 +9,7 @@ export function Header() {
             100
           </div>
           <span className="text-base font-extrabold uppercase tracking-tight text-[#2D2D2D]">
-            Name 100 Women
+            Name 100 Challenge
           </span>
         </Link>
         <nav className="flex items-center gap-3">
