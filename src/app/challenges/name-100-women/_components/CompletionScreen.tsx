@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Trophy, Share2, RotateCcw, Check, Camera } from "lucide-react";
 import { toBlob } from "html-to-image";
+import confetti from "canvas-confetti";
 
 interface CompletionScreenProps {
   elapsedSeconds: number;
@@ -26,6 +27,44 @@ export function CompletionScreen({
   const [imageCopied, setImageCopied] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const elapsed = formatElapsed(elapsedSeconds);
+
+  // Confetti on mount
+  useEffect(() => {
+    const duration = 2500;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.7 },
+        colors: ["#FFE066", "#6CB4EE", "#FF8FAB", "#5CC9C7", "#FFD700"],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.7 },
+        colors: ["#FFE066", "#6CB4EE", "#FF8FAB", "#5CC9C7", "#FFD700"],
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+
+    // Initial burst
+    confetti({
+      particleCount: 80,
+      spread: 100,
+      origin: { y: 0.6 },
+      colors: ["#FFE066", "#6CB4EE", "#FF8FAB", "#5CC9C7", "#FFD700"],
+    });
+
+    // Continuous side stream
+    setTimeout(() => requestAnimationFrame(frame), 300);
+  }, []);
 
   function buildShareText(): string {
     return `🏆 I just named ${targetCount} famous women in ${elapsed}!\n\nCan you beat my score? Play Name 100 Women Challenge!`;
