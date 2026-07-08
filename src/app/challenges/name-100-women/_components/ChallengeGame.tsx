@@ -5,6 +5,7 @@ import { GameInput } from "./GameInput";
 import { NameList } from "./NameList";
 import { ProgressBar } from "./ProgressBar";
 import { CompletionScreen } from "./CompletionScreen";
+import { LiveLeaderboard } from "@/components/leaderboard/LiveLeaderboard";
 import { findDuplicate, clearSubmissionRecord } from "../_lib/storage";
 import { GameState, ValidateResponse, ValidatedName } from "../_lib/types";
 import { AlertCircle, Timer } from "lucide-react";
@@ -138,63 +139,71 @@ export function ChallengeGame() {
 
   // --- Main Game UI ---
   return (
-    <div className="flex flex-1 flex-col items-center gap-8 px-4 py-10 sm:py-14">
-      {/* Header */}
-      <div className="space-y-3 text-center">
-        <h1 className="text-4xl font-extrabold uppercase tracking-tight text-[#2D2D2D] sm:text-5xl">
-          Name 100 Women<br className="sm:hidden" /> Challenge
-        </h1>
-        <p className="mx-auto max-w-md text-sm font-medium text-muted-foreground">
-          Name{" "}
-          <strong className="font-extrabold uppercase text-[#2D2D2D]">
-            100 famous women
-          </strong>{" "}
-          — real female public figures verified by Wikidata. Type a name and
-          press Enter or click Add.
-        </p>
-      </div>
-
-      {/* Input */}
-      <GameInput
-        onAdd={handleAdd}
-        disabled={isChecking}
-        hasCompleted={hasCompleted}
-      />
-
-      {/* Error Banner */}
-      {error && (
-        <div
-          className="retro-card flex w-full max-w-xl items-center gap-2 bg-[#FF8FAB]/30 px-5 py-3 text-sm font-bold text-[#2D2D2D]"
-          role="alert"
-        >
-          <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-          {error}
+    <div className="flex flex-1 flex-col items-center gap-8 px-4 py-10 sm:py-14 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start lg:gap-0 lg:px-8">
+      {/* Center: Game Content */}
+      <div className="flex flex-col items-center gap-8 lg:col-start-2 lg:max-w-xl">
+        {/* Header */}
+        <div className="space-y-3 text-center">
+          <h1 className="text-4xl font-extrabold uppercase tracking-tight text-[#2D2D2D] sm:text-5xl">
+            Name 100 Women<br className="sm:hidden" /> Challenge
+          </h1>
+          <p className="mx-auto max-w-md text-sm font-medium text-muted-foreground">
+            Name{" "}
+            <strong className="font-extrabold uppercase text-[#2D2D2D]">
+              100 famous women
+            </strong>{" "}
+            — real female public figures verified by Wikidata. Type a name and
+            press Enter or click Add.
+          </p>
         </div>
-      )}
 
-      {/* Progress + Timer */}
-      <div className="w-full max-w-xl space-y-3">
-        <ProgressBar current={gameState.count} total={TOTAL} />
+        {/* Input */}
+        <GameInput
+          onAdd={handleAdd}
+          disabled={isChecking}
+          hasCompleted={hasCompleted}
+        />
 
-        {/* Timer */}
-        <div className="flex items-center justify-center">
+        {/* Error Banner */}
+        {error && (
           <div
-            className={`inline-flex items-center gap-2 rounded-full border-[2.5px] border-[#2D2D2D] bg-white px-5 py-2 transition-opacity ${
-              gameState.startTime > 0 ? "opacity-100" : "opacity-40"
-            }`}
-            style={{ boxShadow: "2px 3px 0 rgba(0,0,0,0.06)" }}
-            aria-label={`Elapsed time: ${formatTimer(elapsed)}`}
+            className="retro-card flex w-full max-w-xl items-center gap-2 bg-[#FF8FAB]/30 px-5 py-3 text-sm font-bold text-[#2D2D2D]"
+            role="alert"
           >
-            <Timer className="h-4 w-4 text-[#2D2D2D]" aria-hidden="true" />
-            <span className="text-lg font-extrabold tabular-nums tracking-wide text-[#2D2D2D]">
-              {formatTimer(elapsed)}
-            </span>
+            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {error}
+          </div>
+        )}
+
+        {/* Progress + Timer */}
+        <div className="w-full max-w-xl space-y-3">
+          <ProgressBar current={gameState.count} total={TOTAL} />
+
+          {/* Timer */}
+          <div className="flex items-center justify-center">
+            <div
+              className={`inline-flex items-center gap-2 rounded-full border-[2.5px] border-[#2D2D2D] bg-white px-5 py-2 transition-opacity ${
+                gameState.startTime > 0 ? "opacity-100" : "opacity-40"
+              }`}
+              style={{ boxShadow: "2px 3px 0 rgba(0,0,0,0.06)" }}
+              aria-label={`Elapsed time: ${formatTimer(elapsed)}`}
+            >
+              <Timer className="h-4 w-4 text-[#2D2D2D]" aria-hidden="true" />
+              <span className="text-lg font-extrabold tabular-nums tracking-wide text-[#2D2D2D]">
+                {formatTimer(elapsed)}
+              </span>
+            </div>
           </div>
         </div>
+
+        {/* Name List */}
+        <NameList names={gameState.validatedNames} />
       </div>
 
-      {/* Name List */}
-      <NameList names={gameState.validatedNames} />
+      {/* Right: Live Leaderboard (desktop only) */}
+      <div className="hidden lg:block lg:sticky lg:top-24 lg:col-start-3 lg:justify-self-end lg:pr-0">
+        <LiveLeaderboard />
+      </div>
     </div>
   );
 }
