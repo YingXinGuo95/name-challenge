@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Trophy, Share2, RotateCcw, Copy, Check } from "lucide-react";
+import { Trophy, Share2, RotateCcw, Check } from "lucide-react";
 
 interface CompletionScreenProps {
   startTime: number;
@@ -31,9 +29,7 @@ export function CompletionScreen({ startTime, onRestart }: CompletionScreenProps
   }, [startTime]);
 
   function buildShareText(): string {
-    const emoji = "🏆";
-    const elapsedStr = formatElapsed(Date.now() - startTime);
-    return `${emoji} I just named 100 famous women in ${elapsedStr}!\n\nCan you beat my score? Play Name 100 Women Challenge!`;
+    return `🏆 I just named 100 famous women in ${formatElapsed(Date.now() - startTime)}!\n\nCan you beat my score? Play Name 100 Women Challenge!`;
   }
 
   async function handleShare() {
@@ -52,50 +48,49 @@ export function CompletionScreen({ startTime, onRestart }: CompletionScreenProps
   }
 
   return (
-    <Card className="flex w-full max-w-xl flex-col items-center gap-6 p-8 text-center">
-      <div className="rounded-full bg-emerald-100 p-4 dark:bg-emerald-900/30">
-        <Trophy className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+    <div className="retro-card flex w-full max-w-xl flex-col items-center gap-6 bg-white px-8 py-10 text-center">
+      {/* Trophy icon in white rounded-square box with black border */}
+      <div className="retro-btn h-16 w-16 !rounded-2xl">
+        <Trophy className="h-8 w-8" />
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">
-          🎉 Challenge Complete!
+        <h2 className="text-3xl font-extrabold uppercase tracking-tight text-[#2D2D2D]">
+          Challenge Complete!
         </h2>
-        <p className="text-muted-foreground">
-          You named <span className="font-semibold text-foreground">100 famous women</span>{" "}
+        <p className="text-sm font-medium text-muted-foreground">
+          You named{" "}
+          <span className="font-extrabold uppercase text-[#2D2D2D]">100 famous women</span>{" "}
           in{" "}
-          <span className="font-semibold text-foreground">{elapsed}</span>.
+          <span className="font-extrabold uppercase text-[#2D2D2D]">{elapsed}</span>.
         </p>
       </div>
 
       <div className="flex flex-wrap justify-center gap-3">
-        <Button
+        <button
           onClick={handleShare}
-          size="lg"
-          className="font-semibold"
+          className="retro-btn h-11 gap-2 px-5 text-sm"
         >
           {copied ? (
             <>
-              <Check className="mr-2 h-4 w-4" />
+              <Check className="h-4 w-4" />
               Copied!
             </>
           ) : (
             <>
-              <Share2 className="mr-2 h-4 w-4" />
+              <Share2 className="h-4 w-4" />
               Share Result
             </>
           )}
-        </Button>
-        <Button
+        </button>
+        <button
           onClick={onRestart}
-          variant="outline"
-          size="lg"
-          className="font-semibold"
+          className="retro-btn-dark h-11 gap-2 px-5 text-sm"
         >
-          <RotateCcw className="mr-2 h-4 w-4" />
+          <RotateCcw className="h-4 w-4" />
           Play Again
-        </Button>
+        </button>
       </div>
-    </Card>
+    </div>
   );
 }

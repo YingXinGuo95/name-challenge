@@ -10,26 +10,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --background: 40 38% 89%; /* #F5E6D3 — warm beige */
+    --foreground: 0 0% 12%; /* #1E1E1E — near black */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 0 0% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.625rem;
+    --popover-foreground: 0 0% 12%;
+    --primary: 0 0% 12%; /* dark gray, not pure black */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 20% 94%;
+    --secondary-foreground: 0 0% 12%;
+    --muted: 40 20% 92%;
+    --muted-foreground: 0 0% 38%;
+    --accent: 40 20% 94%;
+    --accent-foreground: 0 0% 12%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 18%; /* dark border for retro look */
+    --input: 0 0% 18%;
+    --ring: 0 0% 12%;
+    --radius: 0.75rem;
   }
 
   * {
@@ -38,10 +38,46 @@
 
   body {
     @apply bg-background text-foreground;
+    /* Subtle graph-paper grid */
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-position: center center;
   }
 }
 
-/* Animations */
+/* ── Retro Component Classes ───────────────────────────────────── */
+
+@layer components {
+  /** Pill-shaped card with thick border and soft shadow */
+  .retro-card {
+    @apply rounded-full border-[2.5px] border-[#2D2D2D];
+    box-shadow: 2px 4px 0 rgba(0, 0, 0, 0.08);
+  }
+
+  /** White square button with black outline */
+  .retro-btn {
+    @apply inline-flex items-center justify-center rounded-xl border-[2.5px] border-[#2D2D2D] bg-white font-bold transition-all;
+    box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.08);
+  }
+  .retro-btn:hover {
+    box-shadow: 1px 2px 0 rgba(0, 0, 0, 0.12);
+    transform: translateY(1px);
+  }
+  .retro-btn:active {
+    box-shadow: none;
+    transform: translateY(2px);
+  }
+
+  /** Dark filled button variant */
+  .retro-btn-dark {
+    @apply retro-btn bg-[#2D2D2D] text-white;
+  }
+}
+
+/* ── Animations ─────────────────────────────────────────────────── */
+
 @keyframes accordion-down {
   from { height: 0; }
   to { height: var(--radix-accordion-content-height); }

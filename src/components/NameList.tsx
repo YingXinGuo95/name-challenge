@@ -1,59 +1,41 @@
 "use client";
 
 import { ValidatedName } from "@/types";
-import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { Check, X, AlertTriangle } from "lucide-react";
 
 interface NameListProps {
   names: ValidatedName[];
 }
 
-const iconMap = {
-  valid: <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-500" />,
-  invalid: <XCircle className="h-5 w-5 shrink-0 text-red-500" />,
-  duplicate: <AlertTriangle className="h-5 w-5 shrink-0 text-amber-500" />,
-};
+const CARD_COLORS = [
+  "bg-white",
+  "bg-[#FFE066]",
+  "bg-[#6CB4EE]",
+  "bg-[#FF8FAB]",
+  "bg-[#5CC9C7]",
+];
 
-const bgMap = {
-  valid: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800",
-  invalid: "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800",
-  duplicate: "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800",
-};
-
-function getEntryStyle(entry: ValidatedName): {
+function getStatus(entry: ValidatedName): {
   icon: React.ReactNode;
-  bg: string;
-  text: string;
+  label: string;
 } {
-  // Check if it's a duplicate (already in the list)
   if (!entry.valid && entry.reason === undefined) {
-    return { icon: iconMap.duplicate, bg: bgMap.duplicate, text: "text-amber-700 dark:text-amber-300" };
+    return {
+      icon: <AlertTriangle className="h-4 w-4" />,
+      label: "dup",
+    };
   }
   if (entry.valid) {
-    return { icon: iconMap.valid, bg: bgMap.valid, text: "text-emerald-700 dark:text-emerald-300" };
+    return { icon: <Check className="h-4 w-4" />, label: "ok" };
   }
-  return { icon: iconMap.invalid, bg: bgMap.invalid, text: "text-red-700 dark:text-red-300" };
-}
-
-function getStatusLabel(entry: ValidatedName): string {
-  if (!entry.valid && entry.reason === undefined) return "⚠️ Duplicate";
-  if (entry.valid) return "✅ Valid";
-  switch (entry.reason) {
-    case "not_found":
-      return "❌ Not found";
-    case "not_human":
-      return "❌ Not a person";
-    case "not_female":
-      return "❌ Not female";
-    default:
-      return "❌ Invalid";
-  }
+  return { icon: <X className="h-4 w-4" />, label: entry.reason?.replace("not_", "") ?? "no" };
 }
 
 export function NameList({ names }: NameListProps) {
   if (names.length === 0) {
     return (
-      <div className="flex min-h-[200px] items-center justify-center rounded-xl border-2 border-dashed border-muted-foreground/25 p-8">
-        <p className="text-center text-sm text-muted-foreground">
+      <div className="flex min-h-[200px] w-full max-w-xl items-center justify-center rounded-full border-[2.5px] border-dashed border-[#2D2D2D]/30 px-8 py-12">
+        <p className="text-center text-sm font-medium text-muted-foreground">
           No names yet. Start typing a famous woman&apos;s name above!
         </p>
       </div>
@@ -61,18 +43,27 @@ export function NameList({ names }: NameListProps) {
   }
 
   return (
-    <div className="w-full max-w-xl space-y-2">
+    <div className="w-full max-w-xl space-y-3">
       {names.map((entry, i) => {
-        const style = getEntryStyle(entry);
+        const { icon, label } = getStatus(entry);
+        const bgColor = CARD_COLORS[i % CARD_COLORS.length];
+        const rotation = i % 2 === 0 ? "rotate-[0.6deg]" : "-rotate-[0.4deg]";
+
         return (
           <div
             key={`${entry.input}-${i}`}
-            className={`flex items-center gap-3 rounded-lg border px-4 py-3 transition-all duration-200 ${style.bg}`}
+            className={`retro-card flex items-center gap-3 px-5 py-3 ${bgColor} ${rotation} transition-all duration-200 hover:rotate-0`}
           >
-            {style.icon}
-            <span className={`flex-1 font-medium ${style.text}`}>{entry.input}</span>
-            <span className={`text-xs font-semibold ${style.text}`}>
-              {getStatusLabel(entry)}
+            <span className="flex-1 truncate text-base font-bold uppercase tracking-wide">
+              {entry.input}
+            </span>
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border-[2px] border-[#2D2D2D] px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wider ${
+                entry.valid ? "bg-white text-[#2D2D2D]" : "bg-[#2D2D2D] text-white"
+              }`}
+            >
+              {icon}
+              {label}
             </span>
           </div>
         );

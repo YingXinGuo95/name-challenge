@@ -11,15 +11,30 @@ import { AlertCircle } from "lucide-react";
 
 const TOTAL = 100;
 
+const EMPTY_STATE: GameState = {
+  startTime: 0,
+  validatedNames: [],
+  count: 0,
+};
+
 export default function HomePage() {
-  const [gameState, setGameState] = useState<GameState>(() => loadGameState());
+  const [gameState, setGameState] = useState<GameState>(EMPTY_STATE);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Persist game state on every change
+  // Hydrate from localStorage after mount (avoid SSR mismatch)
   useEffect(() => {
-    saveGameState(gameState);
-  }, [gameState]);
+    setGameState(loadGameState());
+    setIsHydrated(true);
+  }, []);
+
+  // Persist game state on every change (skip before hydration)
+  useEffect(() => {
+    if (isHydrated) {
+      saveGameState(gameState);
+    }
+  }, [gameState, isHydrated]);
 
   const hasCompleted = gameState.count >= TOTAL;
 
@@ -116,15 +131,16 @@ export default function HomePage() {
 
   // --- Main Game UI ---
   return (
-    <div className="flex flex-1 flex-col items-center gap-8 px-4 py-8 sm:py-12">
+    <div className="flex flex-1 flex-col items-center gap-8 px-4 py-10 sm:py-14">
       {/* Header */}
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Name 100 Women Challenge
+      <div className="space-y-3 text-center">
+        <h1 className="text-4xl font-extrabold uppercase tracking-tight text-[#2D2D2D] sm:text-5xl">
+          Name 100 Women<br className="sm:hidden" /> Challenge
         </h1>
-        <p className="max-w-md text-sm text-muted-foreground">
-          Name <strong>100 famous women</strong> — real female public figures
-          verified by Wikidata. Type a name and press Enter or click Add.
+        <p className="mx-auto max-w-md text-sm font-medium text-muted-foreground">
+          Name <strong className="font-extrabold uppercase text-[#2D2D2D]">100 famous women</strong> —
+          real female public figures verified by Wikidata.
+          Type a name and press Enter or click Add.
         </p>
       </div>
 
@@ -137,7 +153,7 @@ export default function HomePage() {
 
       {/* Error Banner */}
       {error && (
-        <div className="flex w-full max-w-xl items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300">
+        <div className="retro-card flex w-full max-w-xl items-center gap-2 bg-[#FF8FAB]/30 px-5 py-3 text-sm font-bold text-[#2D2D2D]">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
