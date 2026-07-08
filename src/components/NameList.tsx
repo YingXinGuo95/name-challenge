@@ -7,28 +7,33 @@ interface NameListProps {
   names: ValidatedName[];
 }
 
-const CARD_COLORS = [
-  "bg-white",
-  "bg-[#FFE066]",
-  "bg-[#6CB4EE]",
-  "bg-[#FF8FAB]",
-  "bg-[#5CC9C7]",
-];
-
-function getStatus(entry: ValidatedName): {
+function getEntryStyle(entry: ValidatedName): {
   icon: React.ReactNode;
   label: string;
+  bgColor: string;
 } {
+  // Duplicate
   if (!entry.valid && entry.reason === undefined) {
     return {
       icon: <AlertTriangle className="h-4 w-4" />,
       label: "dup",
+      bgColor: "bg-white",
     };
   }
+  // Valid
   if (entry.valid) {
-    return { icon: <Check className="h-4 w-4" />, label: "ok" };
+    return {
+      icon: <Check className="h-4 w-4" />,
+      label: "ok",
+      bgColor: "bg-[#6CB4EE]",
+    };
   }
-  return { icon: <X className="h-4 w-4" />, label: entry.reason?.replace("not_", "") ?? "no" };
+  // Invalid
+  return {
+    icon: <X className="h-4 w-4" />,
+    label: entry.reason?.replace("not_", "") ?? "no",
+    bgColor: "bg-[#FF8FAB]",
+  };
 }
 
 export function NameList({ names }: NameListProps) {
@@ -42,11 +47,13 @@ export function NameList({ names }: NameListProps) {
     );
   }
 
+  // Newest first
+  const reversed = [...names].reverse();
+
   return (
     <div className="w-full max-w-xl space-y-3">
-      {names.map((entry, i) => {
-        const { icon, label } = getStatus(entry);
-        const bgColor = CARD_COLORS[i % CARD_COLORS.length];
+      {reversed.map((entry, i) => {
+        const { icon, label, bgColor } = getEntryStyle(entry);
         const rotation = i % 2 === 0 ? "rotate-[0.6deg]" : "-rotate-[0.4deg]";
 
         return (
