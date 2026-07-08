@@ -10,16 +10,16 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: {
-    default: "ToolShelf — A starter template for lightweight web tools",
-    template: "%s | ToolShelf",
+    default: "Name 100 Women Challenge",
+    template: "%s | Name 100 Women",
   },
   description:
-    "ToolShelf is a Next.js starter template for shipping small, self-contained browser tools. Clone it, add your own tools, and ship fast.",
-  keywords: ["tools", "web utilities", "starter template", "Next.js", "shadcn"],
+    "Can you name 100 famous women? A fun challenge verified by Wikidata — type a name and see if she's a real female public figure.",
+  keywords: ["name 100 women", "challenge", "quiz", "wikidata", "trivia"],
   openGraph: {
-    title: "ToolShelf — A starter template for lightweight web tools",
+    title: "Name 100 Women Challenge",
     description:
-      "A Next.js starter template for shipping small, self-contained browser tools.",
+      "Can you name 100 famous women? A fun challenge verified by Wikidata.",
     type: "website",
   },
 };
