@@ -68,3 +68,60 @@ export function findDuplicate(
     (n) => n.input.toLowerCase().trim() === normalized
   );
 }
+
+// ── Score Submission Tracking ─────────────────────────────────────
+
+const SUBMISSION_KEY = "name100women_submission_v1";
+
+export interface SubmissionRecord {
+  submittedAt: number; // timestamp
+  entryId: string; // Supabase UUID of the submitted entry
+  nickname: string;
+  rank: number;
+}
+
+/** Check if the user has already submitted a score for this challenge session. */
+export function getSubmissionRecord(): SubmissionRecord | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(SUBMISSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as SubmissionRecord;
+    if (
+      typeof parsed.submittedAt !== "number" ||
+      typeof parsed.entryId !== "string" ||
+      typeof parsed.nickname !== "string" ||
+      typeof parsed.rank !== "number"
+    ) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+/** Save a submission record to prevent duplicate submissions. */
+export function saveSubmissionRecord(record: SubmissionRecord): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(SUBMISSION_KEY, JSON.stringify(record));
+  } catch {
+    // silently fail
+  }
+}
+
+/** Check if a score has already been submitted. */
+export function hasSubmittedScore(): boolean {
+  return getSubmissionRecord() !== null;
+}
+
+/** Clear the submission record (e.g., when starting a new game). */
+export function clearSubmissionRecord(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(SUBMISSION_KEY);
+  } catch {
+    // ignore
+  }
+}

@@ -5,7 +5,7 @@ import { GameInput } from "./GameInput";
 import { NameList } from "./NameList";
 import { ProgressBar } from "./ProgressBar";
 import { CompletionScreen } from "./CompletionScreen";
-import { findDuplicate } from "../_lib/storage";
+import { findDuplicate, clearSubmissionRecord } from "../_lib/storage";
 import { GameState, ValidateResponse, ValidatedName } from "../_lib/types";
 import { AlertCircle, Timer } from "lucide-react";
 import config from "../_lib/config";
@@ -119,6 +119,7 @@ export function ChallengeGame() {
     setGameState(EMPTY_STATE);
     setElapsed(0);
     setError(null);
+    clearSubmissionRecord();
   }, []);
 
   // --- Completion Screen ---
@@ -128,6 +129,7 @@ export function ChallengeGame() {
         <CompletionScreen
           elapsedSeconds={elapsed}
           targetCount={TOTAL}
+          challengeSlug="name-100-women"
           onRestart={handleRestart}
         />
       </div>
