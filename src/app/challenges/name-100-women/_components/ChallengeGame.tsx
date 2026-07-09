@@ -5,6 +5,7 @@ import { GameInput } from "./GameInput";
 import { NameList } from "./NameList";
 import { ProgressBar } from "./ProgressBar";
 import { CompletionScreen } from "./CompletionScreen";
+import { GameRules } from "./GameRules";
 import { LiveLeaderboard } from "@/components/leaderboard/LiveLeaderboard";
 import { findDuplicate, clearSubmissionRecord } from "../_lib/storage";
 import { GameState, ValidateResponse, ValidatedName } from "../_lib/types";
@@ -140,6 +141,11 @@ export function ChallengeGame() {
   // --- Main Game UI ---
   return (
     <div className="flex flex-1 flex-col items-center gap-8 px-4 py-10 sm:py-14 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-start lg:gap-0 lg:px-8">
+      {/* Left: Game Rules (desktop only) */}
+      <div className="hidden lg:block lg:sticky lg:top-24 lg:col-start-1 lg:justify-self-start lg:pl-4">
+        <GameRules />
+      </div>
+
       {/* Center: Game Content */}
       <div className="flex flex-col items-center gap-8 lg:col-start-2 lg:max-w-xl">
         {/* Header */}
