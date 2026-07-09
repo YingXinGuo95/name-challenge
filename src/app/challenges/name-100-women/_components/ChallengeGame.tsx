@@ -9,7 +9,7 @@ import { GameRules } from "./GameRules";
 import { LiveLeaderboard } from "@/components/leaderboard/LiveLeaderboard";
 import { findDuplicate, clearSubmissionRecord } from "../_lib/storage";
 import { GameState, ValidateResponse, ValidatedName } from "../_lib/types";
-import { AlertCircle, Timer } from "lucide-react";
+import { AlertCircle, Sparkles, Timer } from "lucide-react";
 import config from "../_lib/config";
 
 const TOTAL = config.targetCount;
@@ -149,17 +149,37 @@ export function ChallengeGame() {
       {/* Center: Game Content */}
       <div className="flex flex-col items-center gap-8 lg:col-start-2 lg:max-w-xl">
         {/* Header */}
-        <div className="space-y-3 text-center">
+        <div className="space-y-4 text-center">
+          {/* Decorative icon row */}
+          <div className="flex items-center justify-center gap-2" aria-hidden="true">
+            <Sparkles className="h-4 w-4 text-[#FF8FAB]/60" />
+            <div className="retro-btn h-10 w-10 !rounded-xl text-lg">
+              ♀
+            </div>
+            <Sparkles className="h-4 w-4 text-[#FF8FAB]/60" />
+          </div>
+
+          {/* Title with "Women" highlighted */}
           <h1 className="text-4xl font-extrabold uppercase tracking-tight text-[#2D2D2D] sm:text-5xl">
-            Name 100 Women<br className="sm:hidden" /> Challenge
+            Name 100{" "}
+            <span className="relative inline-block">
+              <span className="relative z-10 text-[#FF8FAB]">Women</span>
+              <span
+                className="absolute bottom-0 left-0 z-0 h-[10px] w-full rounded-full bg-[#FF8FAB]/20"
+                aria-hidden="true"
+              />
+            </span>
+            {" "}Challenge
           </h1>
-          <p className="mx-auto max-w-md text-sm font-medium text-muted-foreground">
-            Name{" "}
-            <strong className="font-extrabold uppercase text-[#2D2D2D]">
-              100 famous women
+
+          <p className="mx-auto max-w-md text-sm font-medium leading-relaxed text-muted-foreground">
+            Celebrate the achievements of{" "}
+            <strong className="font-extrabold uppercase text-[#FF8FAB]">
+              remarkable women
             </strong>{" "}
-            — real female public figures verified by Wikidata. Type a name and
-            press Enter or click Add.
+            across history — scientists, artists, activists, and athletes.
+            <br className="hidden sm:block" />
+            Type a name and press Enter or click Add.
           </p>
         </div>
 
