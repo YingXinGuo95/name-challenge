@@ -9,7 +9,7 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://100-name-challenge.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://name100challenge.me";
 const siteName = "Name 100 Challenge";
 const siteDescription =
   "How many famous names can you recall? A fun naming challenge verified by Wikidata — type a name and see if it counts.";

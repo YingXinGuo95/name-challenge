@@ -5,7 +5,7 @@ import challenges from "@/data/challenges";
 
 const challenge = challenges.find((c) => c.slug === "name-100-women");
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://100-name-challenge.vercel.app";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://name100challenge.me";
 const pageUrl = `${siteUrl}/challenges/name-100-women`;
 
 export const metadata: Metadata = {
