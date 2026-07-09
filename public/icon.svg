@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="2" dy="3" stdDeviation="0" flood-color="#000" flood-opacity="0.10" />
+    </filter>
+  </defs>
+
+  <!-- Background: white rounded rect with dark border -->
+  <rect x="8" y="8" width="112" height="112" rx="24" ry="24"
+        fill="#FFFFFF" stroke="#2D2D2D" stroke-width="4.5"
+        filter="url(#shadow)" />
+
+  <!-- "100" text -->
+  <text x="64" y="80" font-family="Inter, system-ui, -apple-system, sans-serif"
+        font-size="40" font-weight="800" fill="#2D2D2D"
+        text-anchor="middle" letter-spacing="-1">100</text>
+
+  <!-- Sparkle (four-point star) in top-right corner -->
+  <g transform="translate(96, 24)">
+    <!-- Glow -->
+    <circle cx="0" cy="0" r="14" fill="#FF8FAB" opacity="0.25" />
+    <!-- Star shape -->
+    <path d="M0,-10 L2.5,-2.5 L10,0 L2.5,2.5 L0,10 L-2.5,2.5 L-10,0 L-2.5,-2.5 Z"
+          fill="#FF8FAB" />
+  </g>
+</svg>
