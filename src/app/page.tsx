@@ -3,9 +3,38 @@ import Link from "next/link";
 import challenges from "@/data/challenges";
 import { ArrowRight, Database, Timer, Trophy, Sparkles } from "lucide-react";
 
+const homeTitle = "Name 100 Challenge — Fun Naming Games Verified by Wikidata";
+const homeDescription =
+  "How many famous names can you recall? A fun naming challenge verified by Wikidata — type a name and see if it counts. Free to play, no sign-up required.";
+
 export const metadata: Metadata = {
+  title: {
+    absolute: homeTitle,
+  },
+  description: homeDescription,
   alternates: {
     canonical: "/",
+  },
+  openGraph: {
+    title: homeTitle,
+    description: homeDescription,
+    type: "website",
+    siteName: "Name 100 Challenge",
+    locale: "en_US",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Name 100 Challenge",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: homeTitle,
+    description: homeDescription,
+    images: ["/og-image.png"],
   },
 };
 
@@ -58,6 +87,9 @@ export default function HomePage() {
           <h1 className="text-5xl font-extrabold uppercase tracking-tight text-[#2D2D2D] sm:text-6xl">
             Name 100<br className="sm:hidden" /> Challenge
           </h1>
+          <p className="text-sm font-bold uppercase tracking-wider text-[#FF8FAB]">
+            Fun Naming Games Verified by Wikidata
+          </p>
           <p className="mx-auto max-w-lg text-sm font-medium leading-relaxed text-muted-foreground sm:text-base">
             How many famous names can you recall?{" "}
             <span className="whitespace-nowrap">A series of</span>{" "}
