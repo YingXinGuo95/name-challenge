@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Trophy, Medal, Loader2, AlertCircle, RefreshCw } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { Trophy, Medal, Loader2, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import type { LeaderboardEntry } from "@/lib/leaderboard/types";
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -30,31 +29,32 @@ function getRankBadge(rank: number): { icon: React.ReactNode; color: string } {
 // ── Constants ────────────────────────────────────────────────────────
 
 const REFRESH_INTERVAL = 30_000; // 30 seconds
-const LEADERBOARD_LIMIT = 10;
+const PAGE_SIZE = 10;
+const MAX_ENTRIES = 100; // top 100
 const CHALLENGE_SLUG = "name-100-women";
 
 // ── Component ────────────────────────────────────────────────────────
 
 export function LiveLeaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [page, setPage] = useState(0); // 0-indexed
 
-  const fetchLeaderboard = useCallback(async () => {
+  const totalPages = Math.min(Math.ceil(total / PAGE_SIZE), Math.ceil(MAX_ENTRIES / PAGE_SIZE));
+
+  const fetchLeaderboard = useCallback(async (pageIndex: number) => {
     try {
-      const supabase = createClient();
-
-      const { data, error: queryError } = await supabase
-        .from("leaderboard")
-        .select("*")
-        .eq("challenge_slug", CHALLENGE_SLUG)
-        .order("elapsed_seconds", { ascending: true })
-        .limit(LEADERBOARD_LIMIT);
-
-      if (queryError) throw queryError;
-
-      setEntries(data ?? []);
+      const offset = pageIndex * PAGE_SIZE;
+      const res = await fetch(
+        `/api/leaderboard?challenge=${encodeURIComponent(CHALLENGE_SLUG)}&limit=${PAGE_SIZE}&offset=${offset}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setEntries(data.entries ?? []);
+      setTotal(Math.min(data.total ?? 0, MAX_ENTRIES));
       setLastUpdated(new Date());
       setError(false);
     } catch {
@@ -64,13 +64,27 @@ export function LiveLeaderboard() {
     }
   }, []);
 
-  // Initial fetch + auto-refresh
+  // Initial fetch + auto-refresh (current page only)
   useEffect(() => {
-    fetchLeaderboard();
+    fetchLeaderboard(page);
 
-    const interval = setInterval(fetchLeaderboard, REFRESH_INTERVAL);
+    const interval = setInterval(() => fetchLeaderboard(page), REFRESH_INTERVAL);
     return () => clearInterval(interval);
-  }, [fetchLeaderboard]);
+  }, [fetchLeaderboard, page]);
+
+  const handlePrev = useCallback(() => {
+    if (page > 0) {
+      setIsLoading(true);
+      setPage((p) => p - 1);
+    }
+  }, [page]);
+
+  const handleNext = useCallback(() => {
+    if (page < totalPages - 1) {
+      setIsLoading(true);
+      setPage((p) => p + 1);
+    }
+  }, [page, totalPages]);
 
   // ── Loading State ─────────────────────────────────────────────────
 
@@ -98,7 +112,7 @@ export function LiveLeaderboard() {
           onClick={() => {
             setIsLoading(true);
             setError(false);
-            fetchLeaderboard();
+            fetchLeaderboard(page);
           }}
           className="inline-flex items-center gap-1.5 rounded-full border-2 border-[#2D2D2D] px-3 py-1.5 text-xs font-bold text-[#2D2D2D] transition-transform hover:scale-105"
         >
@@ -125,6 +139,10 @@ export function LiveLeaderboard() {
     );
   }
 
+  // ── Entries for current page with global rank ─────────────────────
+
+  const startRank = page * PAGE_SIZE + 1;
+
   // ── Leaderboard Table ─────────────────────────────────────────────
 
   return (
@@ -140,11 +158,11 @@ export function LiveLeaderboard() {
         <div className="flex items-center gap-2">
           {lastUpdated && (
             <span className="text-[10px] text-muted-foreground">
-              Updated {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
           <button
-            onClick={() => fetchLeaderboard()}
+            onClick={() => fetchLeaderboard(page)}
             className="rounded-full p-1 text-[#2D2D2D]/40 transition-colors hover:bg-[#2D2D2D]/5 hover:text-[#2D2D2D]/70"
             aria-label="Refresh leaderboard"
           >
@@ -168,13 +186,13 @@ export function LiveLeaderboard() {
         {/* Table Body */}
         <div className="max-h-[360px] overflow-y-auto">
           {entries.map((entry, index) => {
-            const rank = index + 1;
+            const rank = startRank + index;
             const badge = getRankBadge(rank);
 
             return (
               <div
                 key={entry.id}
-                className={`flex items-center gap-1 px-3 py-2 text-xs font-medium transition-colors even:bg-[#FFF8E7]/50`}
+                className="flex items-center gap-1 px-3 py-2 text-xs font-medium transition-colors even:bg-[#FFF8E7]/50"
               >
                 {/* Rank */}
                 <span
@@ -200,6 +218,35 @@ export function LiveLeaderboard() {
           })}
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between gap-2">
+          <button
+            onClick={handlePrev}
+            disabled={page === 0}
+            className="inline-flex items-center gap-0.5 rounded-full border-[2.5px] border-[#2D2D2D] bg-white px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[#2D2D2D] transition-all hover:bg-[#F5E6D3]/60 disabled:opacity-30 disabled:cursor-not-allowed"
+            style={{ boxShadow: "1px 2px 0 rgba(0,0,0,0.06)" }}
+          >
+            <ChevronLeft className="h-3 w-3" />
+            Prev
+          </button>
+
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            {page + 1} / {totalPages}
+          </span>
+
+          <button
+            onClick={handleNext}
+            disabled={page >= totalPages - 1}
+            className="inline-flex items-center gap-0.5 rounded-full border-[2.5px] border-[#2D2D2D] bg-white px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[#2D2D2D] transition-all hover:bg-[#F5E6D3]/60 disabled:opacity-30 disabled:cursor-not-allowed"
+            style={{ boxShadow: "1px 2px 0 rgba(0,0,0,0.06)" }}
+          >
+            Next
+            <ChevronRight className="h-3 w-3" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
