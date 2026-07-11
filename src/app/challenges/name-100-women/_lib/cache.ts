@@ -3,6 +3,12 @@ import { CacheEntry } from "@/app/challenges/name-100-women/_lib/types";
 const cache: Map<string, CacheEntry> = new Map();
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms
 
+/** Build a cache key, optionally scoped by gender. */
+function buildCacheKey(name: string, gender?: string): string {
+  const base = name.toLowerCase();
+  return gender ? `${base}::${gender}` : base;
+}
+
 /** Evict expired entries from the cache. */
 function evictExpired(): void {
   const now = Date.now();
@@ -17,12 +23,13 @@ function evictExpired(): void {
  * Look up a name in the cache.
  * Returns the CacheEntry if found and not expired, otherwise undefined.
  */
-export function cacheGet(key: string): CacheEntry | undefined {
+export function cacheGet(key: string, gender?: string): CacheEntry | undefined {
   evictExpired();
-  const entry = cache.get(key);
+  const cacheKey = buildCacheKey(key, gender);
+  const entry = cache.get(cacheKey);
   if (!entry) return undefined;
   if (entry.expiresAt <= Date.now()) {
-    cache.delete(key);
+    cache.delete(cacheKey);
     return undefined;
   }
   return entry;
@@ -32,8 +39,9 @@ export function cacheGet(key: string): CacheEntry | undefined {
  * Store a result in the cache.
  * Only `valid: true` results are cached per PRD requirements.
  */
-export function cacheSet(key: string, entry: Omit<CacheEntry, "expiresAt">): void {
-  cache.set(key, {
+export function cacheSet(key: string, entry: Omit<CacheEntry, "expiresAt">, gender?: string): void {
+  const cacheKey = buildCacheKey(key, gender);
+  cache.set(cacheKey, {
     ...entry,
     expiresAt: Date.now() + CACHE_TTL,
   });

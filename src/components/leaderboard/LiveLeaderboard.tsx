@@ -31,11 +31,12 @@ function getRankBadge(rank: number): { icon: React.ReactNode; color: string } {
 const REFRESH_INTERVAL = 30_000; // 30 seconds
 const PAGE_SIZE = 10;
 const MAX_ENTRIES = 100; // top 100
-const CHALLENGE_SLUG = "name-100-women";
+const DEFAULT_CHALLENGE_SLUG = "name-100-women";
 
 // ── Component ────────────────────────────────────────────────────────
 
-export function LiveLeaderboard() {
+export function LiveLeaderboard({ challengeSlug }: { challengeSlug?: string }) {
+  const slug = challengeSlug ?? DEFAULT_CHALLENGE_SLUG;
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +50,7 @@ export function LiveLeaderboard() {
     try {
       const offset = pageIndex * PAGE_SIZE;
       const res = await fetch(
-        `/api/leaderboard?challenge=${encodeURIComponent(CHALLENGE_SLUG)}&limit=${PAGE_SIZE}&offset=${offset}`
+        `/api/leaderboard?challenge=${encodeURIComponent(slug)}&limit=${PAGE_SIZE}&offset=${offset}`
       );
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();

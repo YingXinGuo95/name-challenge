@@ -6,18 +6,34 @@ export function escapeSparqlString(input: string): string {
   return input.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+/** Supported gender values for Wikidata validation. */
+export type Gender = "female" | "male";
+
+/** Map gender to the corresponding Wikidata Q-ID for property P21 (sex or gender). */
+const GENDER_QID: Record<Gender, string> = {
+  female: "wd:Q6581072",
+  male: "wd:Q6581097",
+};
+
 /**
  * Build a SPARQL query to validate whether a name corresponds to a
- * female human (Q5 = human, Q6581072 = female) in Wikidata.
+ * human of the given gender in Wikidata.
  *
- * Returns the full SPARQL query string ready for the Wikidata endpoint.
+ * - Q5 = human
+ * - Q6581072 = female
+ * - Q6581097 = male
+ *
+ * @param name  The display name to search for (English label).
+ * @param gender  "female" (default) or "male".
+ * @returns The full SPARQL query string ready for the Wikidata endpoint.
  */
-export function buildValidationQuery(name: string): string {
+export function buildValidationQuery(name: string, gender: Gender = "female"): string {
   const escaped = escapeSparqlString(name);
+  const genderQid = GENDER_QID[gender];
   return `
 SELECT ?item WHERE {
   ?item wdt:P31 wd:Q5 .
-  ?item wdt:P21 wd:Q6581072 .
+  ?item wdt:P21 ${genderQid} .
   ?item rdfs:label "${escaped}"@en .
 }
 LIMIT 1`.trim();
@@ -27,4 +43,4 @@ LIMIT 1`.trim();
 export const WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
 
 /** User-Agent header required by Wikidata policy. */
-export const USER_AGENT = "Name100Women/0.1 (contact@example.com)";
+export const USER_AGENT = "Name100Challenge/0.2 (contact@example.com)";

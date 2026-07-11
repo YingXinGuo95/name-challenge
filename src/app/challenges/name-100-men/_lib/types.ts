@@ -7,7 +7,7 @@ export interface GameState {
 }
 
 export interface ValidatedName {
-  input: string; // original user input, e.g. "Emma Watson"
+  input: string; // original user input, e.g. "Barack Obama"
   valid: boolean;
   reason?: ValidationReason;
   qid?: string; // Wikidata Q-ID (only when valid)

@@ -4,10 +4,11 @@ import {
   buildValidationQuery,
   WIKIDATA_SPARQL_ENDPOINT,
   USER_AGENT,
+  type Gender,
 } from "@/app/challenges/name-100-women/_lib/sparql";
 import { SparqlResponse, ValidateResponse } from "@/app/challenges/name-100-women/_lib/types";
 import logger from "@/lib/logger";
-import { localLookup } from "@/app/challenges/name-100-women/_lib/famous-women";
+import { localLookup as localLookupWomen } from "@/app/challenges/name-100-women/_lib/famous-women";
 import config from "@/app/challenges/name-100-women/_lib/config";
 
 // ── Rate Limiting (simple in-memory) ────────────────────────────────
@@ -36,12 +37,12 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
 
 // ── SPARQL Query ────────────────────────────────────────────────────
 
-async function queryWikidata(name: string): Promise<{
+async function queryWikidata(name: string, gender: Gender): Promise<{
   valid: boolean;
   qid?: string;
   reason?: string;
 }> {
-  const query = buildValidationQuery(name);
+  const query = buildValidationQuery(name, gender);
   const url = `${WIKIDATA_SPARQL_ENDPOINT}?format=json&query=${encodeURIComponent(query)}`;
 
   logger.info({ name }, "Querying Wikidata SPARQL");
@@ -83,6 +84,7 @@ async function queryWikidata(name: string): Promise<{
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const rawName = searchParams.get("q");
+  const rawGender = searchParams.get("gender") || "female";
 
   // --- Input validation ---
   if (!rawName || rawName.trim().length === 0) {
@@ -91,6 +93,16 @@ export async function GET(request: NextRequest) {
       { status: 400 }
     );
   }
+
+  // Validate gender
+  if (rawGender !== "female" && rawGender !== "male") {
+    return NextResponse.json(
+      { error: "Invalid 'gender' parameter. Must be 'female' or 'male'." },
+      { status: 400 }
+    );
+  }
+
+  const gender: Gender = rawGender;
 
   // Truncate overly long inputs to prevent abuse
   const name = rawName.trim().slice(0, 200);
@@ -116,34 +128,39 @@ export async function GET(request: NextRequest) {
   }
 
   // --- Cache lookup ---
-  const cached = cacheGet(cacheKey);
+  const cached = cacheGet(cacheKey, gender);
   if (cached) {
-    logger.info({ name, cacheKey }, "Cache hit");
+    logger.info({ name, cacheKey, gender }, "Cache hit");
     const response: ValidateResponse = { valid: cached.valid };
     if (cached.qid) response.qid = cached.qid;
     return NextResponse.json(response);
   }
 
+  // Resolve local lookup based on gender
+  const localLookupFn = gender === "male"
+    ? await import("@/app/challenges/name-100-men/_lib/famous-men").then(m => m.localLookup).catch(() => null)
+    : localLookupWomen;
+
   // --- Local-only mode ---
   if (config.dataSource === "local") {
-    logger.info({ name, cacheKey }, "Local-only mode");
-    const local = localLookup(name);
+    logger.info({ name, cacheKey, gender }, "Local-only mode");
+    const local = localLookupFn?.(name);
     if (local) {
-      cacheSet(cacheKey, { valid: true, qid: local.qid });
+      cacheSet(cacheKey, { valid: true, qid: local.qid }, gender);
       return NextResponse.json({ valid: true, qid: local.qid });
     }
     return NextResponse.json({ valid: false, reason: "not_found" });
   }
 
   // --- Wikidata query (with local fallback) ---
-  logger.info({ name, cacheKey }, "Cache miss — fetching from Wikidata");
+  logger.info({ name, cacheKey, gender }, "Cache miss — fetching from Wikidata");
 
   try {
-    const result = await queryWikidata(name);
+    const result = await queryWikidata(name, gender);
 
     // Only cache valid results (per PRD)
     if (result.valid) {
-      cacheSet(cacheKey, { valid: true, qid: result.qid });
+      cacheSet(cacheKey, { valid: true, qid: result.qid }, gender);
     }
 
     const response: ValidateResponse = { valid: result.valid };
@@ -162,12 +179,12 @@ export async function GET(request: NextRequest) {
     }
 
     // --- Fallback: local dataset ---
-    logger.warn({ err: message }, "Wikidata unreachable, falling back to local dataset");
-    const local = localLookup(name);
+    logger.warn({ err: message, gender }, "Wikidata unreachable, falling back to local dataset");
+    const local = localLookupFn?.(name);
 
     if (local) {
       // Cache the local result too so retries are instant
-      cacheSet(cacheKey, { valid: true, qid: local.qid });
+      cacheSet(cacheKey, { valid: true, qid: local.qid }, gender);
       return NextResponse.json({ valid: true, qid: local.qid });
     }
 

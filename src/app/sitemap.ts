@@ -16,6 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/challenges/name-100-men`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.9,
     }
   ];
 }
