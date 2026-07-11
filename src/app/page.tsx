@@ -121,7 +121,7 @@ export default function HomePage() {
 
       {/* ── Challenge Cards ─────────────────────────────────────── */}
       <section className="w-full px-4 pb-16">
-        <div className="mx-auto grid w-full max-w-2xl gap-5 sm:grid-cols-2">
+        <div className="mx-auto grid w-full max-w-4xl gap-5 sm:grid-cols-3">
           {challenges.map((challenge, i) => {
             const rotation =
               i % 2 === 0 ? "rotate-[0.8deg]" : "-rotate-[0.6deg]";
