@@ -28,13 +28,14 @@ const GENDER_QID: Record<Gender, string> = {
  * @returns The full SPARQL query string ready for the Wikidata endpoint.
  */
 export function buildValidationQuery(name: string, gender: Gender = "female"): string {
-  const escaped = escapeSparqlString(name);
+  const lower = escapeSparqlString(name.toLowerCase());
   const genderQid = GENDER_QID[gender];
   return `
 SELECT ?item WHERE {
   ?item wdt:P31 wd:Q5 .
   ?item wdt:P21 ${genderQid} .
-  ?item rdfs:label "${escaped}"@en .
+  ?item rdfs:label ?label .
+  FILTER(LANG(?label) = "en" && LCASE(STR(?label)) = "${lower}")
 }
 LIMIT 1`.trim();
 }
