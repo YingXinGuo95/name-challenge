@@ -18,10 +18,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${siteUrl}/challenges/name-100-women/rules`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
       url: `${siteUrl}/challenges/name-100-men`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.9,
-    }
+    },
+    {
+      url: `${siteUrl}/challenges/name-100-men/rules`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
   ];
 }

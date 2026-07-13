@@ -75,6 +75,14 @@ export function GameRules() {
         Think across categories — scientists, artists, activists, athletes,
         writers, politicians, and more!
       </p>
+
+      {/* Link to full rules page */}
+      <a
+        href="/challenges/name-100-women/rules"
+        className="text-[11px] font-extrabold uppercase tracking-wider text-[#FF8FAB] hover:underline"
+      >
+        Read full rules →
+      </a>
     </div>
   );
 }
