@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ChallengeGame } from "./_components/ChallengeGame";
 import { JsonLd } from "@/components/layout/JsonLd";
 import challenges from "@/data/challenges";
@@ -70,6 +71,25 @@ const gameSchema = {
   }),
 };
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: siteUrl,
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Name 100 Men Challenge",
+      item: pageUrl,
+    },
+  ],
+};
+
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -106,6 +126,20 @@ export default function ChallengePage() {
     <>
       <JsonLd data={gameSchema} />
       <JsonLd data={faqSchema} />
+      <JsonLd data={breadcrumbSchema} />
+
+      {/* Breadcrumb */}
+      <nav
+        className="mx-auto flex w-full max-w-7xl items-center gap-1.5 px-4 pt-5 text-[11px] font-extrabold uppercase tracking-wider text-[#2D2D2D]/50"
+        aria-label="Breadcrumb"
+      >
+        <Link href="/" className="hover:text-[#5B9BD5] transition-colors">
+          Home
+        </Link>
+        <span>/</span>
+        <span className="text-[#2D2D2D]/70">Name 100 Men</span>
+      </nav>
+
       <ChallengeGame />
     </>
   );
