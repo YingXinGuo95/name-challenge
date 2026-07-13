@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cacheGet, cacheSet } from "@/app/challenges/name-100-women/_lib/cache";
 import {
-  buildValidationQuery,
-  WIKIDATA_SPARQL_ENDPOINT,
-  USER_AGENT,
+  validateWikidata,
   type Gender,
 } from "@/app/challenges/name-100-women/_lib/sparql";
-import { SparqlResponse, ValidateResponse } from "@/app/challenges/name-100-women/_lib/types";
+import { ValidateResponse } from "@/app/challenges/name-100-women/_lib/types";
 import logger from "@/lib/logger";
 import { localLookup as localLookupWomen } from "@/app/challenges/name-100-women/_lib/famous-women";
 import config from "@/app/challenges/name-100-women/_lib/config";
@@ -35,48 +33,15 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
   return { allowed: true };
 }
 
-// ── SPARQL Query ────────────────────────────────────────────────────
+// ── Wikidata Validation ────────────────────────────────────────────────
 
 async function queryWikidata(name: string, gender: Gender): Promise<{
   valid: boolean;
   qid?: string;
   reason?: string;
 }> {
-  const query = buildValidationQuery(name, gender);
-  const url = `${WIKIDATA_SPARQL_ENDPOINT}?format=json&query=${encodeURIComponent(query)}`;
-
-  logger.info({ name }, "Querying Wikidata SPARQL");
-
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      Accept: "application/json",
-    },
-    signal: AbortSignal.timeout(10_000), // 10s timeout
-  });
-
-  if (res.status === 429) {
-    logger.warn("Wikidata rate limited (429)");
-    throw new Error("rate_limited");
-  }
-
-  if (!res.ok) {
-    logger.error({ status: res.status }, "Wikidata request failed");
-    throw new Error(`Wikidata returned ${res.status}`);
-  }
-
-  const data: SparqlResponse = await res.json();
-  const bindings = data.results?.bindings;
-
-  if (!bindings || bindings.length === 0) {
-    return { valid: false, reason: "not_found" };
-  }
-
-  const itemUri = bindings[0].item.value;
-  // Extract Q-ID from URI like http://www.wikidata.org/entity/Q25397
-  const qid = itemUri.split("/").pop() || itemUri;
-
-  return { valid: true, qid };
+  logger.info({ name, gender }, "Querying Wikidata (REST API + SPARQL ASK)");
+  return validateWikidata(name, gender);
 }
 
 // ── API Handler ─────────────────────────────────────────────────────
