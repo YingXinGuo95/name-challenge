@@ -23,6 +23,14 @@ const challenges: Challenge[] = [
       "Name 100 famous men — real male public figures verified by Wikidata. From scientists to artists, leaders to athletes.",
     color: "bg-[#5B9BD5]",
   },
+  {
+    slug: "name-100-countries",
+    title: "Name 100 Countries",
+    emoji: "🌍",
+    description:
+      "Name 100 countries from every continent — instant local validation against a dataset of 250+ nations and territories.",
+    color: "bg-[#4CAF50]",
+  },
 ];
 
 export default challenges;
