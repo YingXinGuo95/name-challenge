@@ -44,4 +44,4 @@ LIMIT 1`.trim();
 export const WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
 
 /** User-Agent header required by Wikidata policy. */
-export const USER_AGENT = "Name100Challenge/0.2 (contact@example.com)";
+export const USER_AGENT = "Name100Challenge/1.0 (https://name100challenge.me; yingxinguo.cn@gmail.com)";
