@@ -31,6 +31,14 @@ const challenges: Challenge[] = [
       "Name 100 countries from every continent — instant local validation against a dataset of 250+ nations and territories.",
     color: "bg-[#4CAF50]",
   },
+  {
+    slug: "name-100-pokemon",
+    title: "Name 100 Pokémon",
+    emoji: "⚡",
+    description:
+      "Gotta name 'em all! Name 100 Pokémon across all 9 generations — instant local validation against 300+ Pokémon.",
+    color: "bg-[#FFCB05]",
+  },
 ];
 
 export default challenges;
