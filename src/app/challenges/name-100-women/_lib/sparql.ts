@@ -19,6 +19,10 @@ const GENDER_QID: Record<Gender, string> = {
  * Build a SPARQL query to validate whether a name corresponds to a
  * human of the given gender in Wikidata.
  *
+ * Uses `SERVICE wikibase:mwapi` for entity search (same indexed search
+ * as the Wikidata search box) instead of scanning `rdfs:label` which
+ * cannot use the index with LCASE/STR.
+ *
  * - Q5 = human
  * - Q6581072 = female
  * - Q6581097 = male
@@ -28,14 +32,19 @@ const GENDER_QID: Record<Gender, string> = {
  * @returns The full SPARQL query string ready for the Wikidata endpoint.
  */
 export function buildValidationQuery(name: string, gender: Gender = "female"): string {
-  const lower = escapeSparqlString(name.toLowerCase());
+  const escaped = escapeSparqlString(name);
   const genderQid = GENDER_QID[gender];
   return `
 SELECT ?item WHERE {
+  SERVICE wikibase:mwapi {
+    bd:serviceParam wikibase:api "EntitySearch".
+    bd:serviceParam wikibase:endpoint "www.wikidata.org".
+    bd:serviceParam mwapi:search "${escaped}".
+    bd:serviceParam mwapi:language "en".
+    ?item wikibase:apiOutputItem mwapi:item.
+  }
   ?item wdt:P31 wd:Q5 .
   ?item wdt:P21 ${genderQid} .
-  ?item rdfs:label ?label .
-  FILTER(LANG(?label) = "en" && LCASE(STR(?label)) = "${lower}")
 }
 LIMIT 1`.trim();
 }
