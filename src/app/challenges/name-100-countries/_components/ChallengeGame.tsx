@@ -72,6 +72,7 @@ export function ChallengeGame() {
       const entry: ValidatedName = {
         input: name,
         valid: result !== null,
+        reason: result ? undefined : "not_found",
         code: result?.code,
         display: result?.display,
       };
