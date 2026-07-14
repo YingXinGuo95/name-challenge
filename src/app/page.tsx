@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import challenges from "@/data/challenges";
+import { ScrollToChallenges } from "@/components/ScrollToChallenges";
 import { ArrowRight, Database, Timer, Trophy, Sparkles } from "lucide-react";
 
 const homeTitle = "Name 100 Challenge — Fun Naming Games Verified by Wikidata";
@@ -101,13 +102,7 @@ export default function HomePage() {
         </div>
 
         {/* CTA */}
-        <Link
-          href={`/challenges/${challenges[0]?.slug ?? ""}`}
-          className="retro-btn-dark relative h-11 gap-2 px-6 text-sm font-extrabold uppercase tracking-wider"
-        >
-          Start Playing
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+        <ScrollToChallenges />
 
         {/* Decorative divider */}
         <div className="flex items-center gap-3 pt-2" aria-hidden="true">
@@ -120,7 +115,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Challenge Cards ─────────────────────────────────────── */}
-      <section className="w-full px-4 pb-16">
+      <section id="challenges" className="w-full px-4 pb-16">
         <div className="mx-auto grid w-full max-w-4xl gap-5 sm:grid-cols-3">
           {challenges.map((challenge, i) => {
             const rotation =
