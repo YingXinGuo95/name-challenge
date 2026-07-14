@@ -51,7 +51,7 @@ export function ChallengeGame() {
     (name: string) => {
       setError(null);
 
-      // --- Duplicate check ---
+      // --- Duplicate check (raw input) ---
       const duplicate = findDuplicate(gameState, name);
       if (duplicate) {
         const entry: ValidatedName = {
@@ -68,6 +68,27 @@ export function ChallengeGame() {
 
       // --- Local validation ---
       const result = localLookup(name);
+
+      // --- Duplicate check (canonical form) ---
+      // e.g. "NidoranM" and "Nidoran M" both resolve to "Nidoran M"
+      if (result) {
+        const canonicalDisplay = result.display.toLowerCase();
+        const alreadyNamed = gameState.validatedNames.some(
+          (n) => n.valid && n.display?.toLowerCase() === canonicalDisplay
+        );
+        if (alreadyNamed) {
+          const entry: ValidatedName = {
+            input: name,
+            valid: false,
+          };
+          setGameState((prev) => ({
+            ...prev,
+            startTime: prev.startTime === 0 ? Date.now() : prev.startTime,
+            validatedNames: [...prev.validatedNames, entry],
+          }));
+          return;
+        }
+      }
 
       const entry: ValidatedName = {
         input: name,

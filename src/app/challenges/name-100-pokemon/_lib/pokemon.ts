@@ -141,24 +141,23 @@ const ALIASES: Record<string, string> = {
 
 // ── Lookup ──────────────────────────────────────────────────────────
 
-function normalize(name: string): string {
-  return name.toLowerCase().trim().replace(/\s+/g, " ");
+/** Compact a string for lookup: lowercase, remove all spaces/hyphens. */
+function compact(name: string): string {
+  return name.toLowerCase().replace(/[\s-]/g, "");
 }
 
 const LOOKUP_MAP: Map<string, string> = new Map();
 
+// Build lookup: compact key → canonical display name
 for (const entry of POKEMON_ENTRIES) {
-  LOOKUP_MAP.set(normalize(entry), entry);
-}
-// Also add hyphen-free key for hyphenated names
-for (const entry of POKEMON_ENTRIES) {
-  const noHyphenKey = normalize(entry).replace(/-/g, "");
-  if (!LOOKUP_MAP.has(noHyphenKey)) {
-    LOOKUP_MAP.set(noHyphenKey, entry);
+  const key = compact(entry);
+  if (!LOOKUP_MAP.has(key)) {
+    LOOKUP_MAP.set(key, entry);
   }
 }
+// Aliases override only if no primary entry already uses that compact key
 for (const [alias, target] of Object.entries(ALIASES)) {
-  const key = normalize(alias);
+  const key = compact(alias);
   if (!LOOKUP_MAP.has(key)) {
     LOOKUP_MAP.set(key, target);
   }
@@ -170,13 +169,8 @@ export interface LocalLookupResult {
 }
 
 export function localLookup(name: string): LocalLookupResult | null {
-  let key = normalize(name);
-  let display = LOOKUP_MAP.get(key);
-  // Try without hyphens
-  if (!display) {
-    key = key.replace(/-/g, "");
-    display = LOOKUP_MAP.get(key);
-  }
+  const key = compact(name);
+  const display = LOOKUP_MAP.get(key);
   if (!display) return null;
   return { valid: true, display };
 }
