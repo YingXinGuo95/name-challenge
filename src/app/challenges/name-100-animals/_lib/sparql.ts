@@ -12,6 +12,40 @@ export const USER_AGENT =
 // Q68947 = subspecies (taxon rank — REJECT)
 // P105   = taxon rank property
 
+// ── Proxy-aware fetch ───────────────────────────────────────────────
+
+/**
+ * Build fetch init with proxy dispatcher if HTTP_PROXY / HTTPS_PROXY is set.
+ * Node.js's built-in fetch (undici) does NOT automatically respect these
+ * env vars — we must configure a ProxyAgent explicitly.
+ */
+function buildFetchInit(signal: AbortSignal): RequestInit {
+  const init: RequestInit & { dispatcher?: import("undici").Dispatcher } = {
+    headers: {
+      "User-Agent": USER_AGENT,
+      Accept: "application/json",
+    },
+    signal,
+  };
+
+  const proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+  if (proxy) {
+    // Dynamic import to avoid issues if undici types aren't available
+    try {
+      const { ProxyAgent } = require("undici") as typeof import("undici");
+      init.dispatcher = new ProxyAgent(proxy);
+    } catch {
+      // undici ProxyAgent not available — fall through without proxy
+    }
+  }
+
+  return init;
+}
+
+function proxyFetch(url: string, timeoutMs = 3_000): Promise<Response> {
+  return fetch(url, buildFetchInit(AbortSignal.timeout(timeoutMs)));
+}
+
 // ── Entity Search (REST API) ────────────────────────────────────────
 
 interface WbSearchResult {
@@ -41,13 +75,7 @@ export async function searchEntities(
     limit: String(limit),
   })}`;
 
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      Accept: "application/json",
-    },
-    signal: AbortSignal.timeout(3_000),
-  });
+  const res = await proxyFetch(url);
 
   if (res.status === 429) throw new Error("rate_limited");
   if (!res.ok) throw new Error(`Entity search returned ${res.status}`);
@@ -84,13 +112,7 @@ async function batchGetTaxonRanks(qids: string[]): Promise<Map<string, string | 
     format: "json",
   })}`;
 
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      Accept: "application/json",
-    },
-    signal: AbortSignal.timeout(3_000),
-  });
+  const res = await proxyFetch(url);
 
   if (res.status === 429) throw new Error("rate_limited");
   if (!res.ok) throw new Error(`Get entities returned ${res.status}`);

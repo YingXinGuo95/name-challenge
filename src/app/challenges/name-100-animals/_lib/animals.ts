@@ -18,7 +18,7 @@ const animals: AnimalEntry[] = [
   // MAMMALS — Carnivores
   // ═══════════════════════════════════════════════════════════════════
   { qid: "Q140", label: "lion", aliases: ["african lion"] },
-  // { qid: "Q36557", label: "tiger" },
+  { qid: "Q36557", label: "tiger" },
   { qid: "Q20980872", label: "cat", aliases: ["domestic cat", "house cat", "feline"] },
   { qid: "Q144", label: "dog", aliases: ["domestic dog", "canine"] },
   { qid: "Q18498", label: "leopard" },
