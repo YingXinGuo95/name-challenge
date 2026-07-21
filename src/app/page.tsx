@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import challenges from "@/data/challenges";
 import { ScrollToChallenges } from "@/components/ScrollToChallenges";
+import { ContactSidebar } from "@/components/layout/ContactSidebar";
 import { ArrowRight, Database, Timer, Trophy, Sparkles } from "lucide-react";
 
 const homeTitle = "Name 100 Challenge — Fun Naming Games Verified by Wikidata";
@@ -229,6 +230,7 @@ export default function HomePage() {
           </p>
         </div>
       </section>
+      <ContactSidebar />
     </div>
   );
 }
