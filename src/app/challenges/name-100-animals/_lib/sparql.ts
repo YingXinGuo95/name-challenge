@@ -33,7 +33,8 @@ function buildFetchInit(signal: AbortSignal): RequestInit {
   if (proxy) {
     // Dynamic import to avoid issues if undici types aren't available
     try {
-      const { ProxyAgent } = require("undici") as typeof import("undici");
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { ProxyAgent } = require("undici");
       init.dispatcher = new ProxyAgent(proxy);
     } catch {
       // undici ProxyAgent not available — fall through without proxy
