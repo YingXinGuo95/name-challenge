@@ -4,7 +4,7 @@
  */
 const config = {
   /** Number of correct names required to complete the challenge. */
-  targetCount: 2,
+  targetCount: 100,
 
   /**
    * Data source for name validation.
