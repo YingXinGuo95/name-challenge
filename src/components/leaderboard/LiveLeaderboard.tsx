@@ -28,7 +28,7 @@ function getRankBadge(rank: number): { icon: React.ReactNode; color: string } {
 
 // ── Constants ────────────────────────────────────────────────────────
 
-const REFRESH_INTERVAL = 30_000; // 30 seconds
+const REFRESH_INTERVAL = 60_000; // 60 seconds
 const PAGE_SIZE = 10;
 const MAX_ENTRIES = 100; // top 100
 const DEFAULT_CHALLENGE_SLUG = "name-100-women";
