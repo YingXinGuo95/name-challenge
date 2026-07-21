@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cacheGet, cacheSet } from "@/app/challenges/name-100-women/_lib/cache";
+import { cacheGet as cacheGetAnimals, cacheSet as cacheSetAnimals } from "@/app/challenges/name-100-animals/_lib/cache";
 import {
   validateWikidata,
   type Gender,
 } from "@/app/challenges/name-100-women/_lib/sparql";
+import {
+  validateWikidata as validateAnimalWikidata,
+} from "@/app/challenges/name-100-animals/_lib/sparql";
 import { ValidateResponse } from "@/app/challenges/name-100-women/_lib/types";
+import { ValidateResponse as AnimalsValidateResponse } from "@/app/challenges/name-100-animals/_lib/types";
 import logger from "@/lib/logger";
 import { localLookup as localLookupWomen } from "@/app/challenges/name-100-women/_lib/famous-women";
 import config from "@/app/challenges/name-100-women/_lib/config";
+import { localLookup as localLookupAnimals } from "@/app/challenges/name-100-animals/_lib/animals";
+import animalsConfig from "@/app/challenges/name-100-animals/_lib/config";
 
 // ── Rate Limiting (simple in-memory) ────────────────────────────────
 
@@ -44,12 +51,22 @@ async function queryWikidata(name: string, gender: Gender): Promise<{
   return validateWikidata(name, gender);
 }
 
+async function queryAnimalWikidata(name: string): Promise<{
+  valid: boolean;
+  qid?: string;
+  reason?: string;
+}> {
+  logger.info({ name }, "Querying Wikidata for animal species (REST API + SPARQL ASK)");
+  return validateAnimalWikidata(name);
+}
+
 // ── API Handler ─────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const rawName = searchParams.get("q");
   const rawGender = searchParams.get("gender") || "female";
+  const challenge = searchParams.get("challenge") || "women";
 
   // --- Input validation ---
   if (!rawName || rawName.trim().length === 0) {
@@ -59,19 +76,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Validate gender
-  if (rawGender !== "female" && rawGender !== "male") {
-    return NextResponse.json(
-      { error: "Invalid 'gender' parameter. Must be 'female' or 'male'." },
-      { status: 400 }
-    );
-  }
-
-  const gender: Gender = rawGender;
-
   // Truncate overly long inputs to prevent abuse
   const name = rawName.trim().slice(0, 200);
-  const cacheKey = name.toLowerCase();
 
   // --- Rate limiting ---
   const ip =
@@ -91,6 +97,83 @@ export async function GET(request: NextRequest) {
       }
     );
   }
+
+  // ── Animals Challenge ──────────────────────────────────────────────
+
+  if (challenge === "animals") {
+    const cacheKey = name.toLowerCase();
+
+    // --- Cache lookup ---
+    const cached = cacheGetAnimals(cacheKey);
+    if (cached) {
+      logger.info({ name, cacheKey, challenge }, "Cache hit (animals)");
+      const response: AnimalsValidateResponse = { valid: cached.valid };
+      if (cached.qid) response.qid = cached.qid;
+      return NextResponse.json(response);
+    }
+
+    // --- Step 1: Local dataset lookup (always checked first) ---
+    if (animalsConfig.dataSource === "local") {
+      logger.info({ name, cacheKey, challenge }, "Local-only mode (animals)");
+      const local = localLookupAnimals(name);
+      if (local) {
+        cacheSetAnimals(cacheKey, { valid: true, qid: local.qid });
+        return NextResponse.json({ valid: true, qid: local.qid });
+      }
+      return NextResponse.json({ valid: false, reason: "not_found" });
+    }
+
+    // --- Step 1: Check local dataset first ---
+    const localMatch = localLookupAnimals(name);
+    if (localMatch) {
+      logger.info({ name, cacheKey, challenge }, "Local dataset hit (animals)");
+      cacheSetAnimals(cacheKey, { valid: true, qid: localMatch.qid });
+      return NextResponse.json({ valid: true, qid: localMatch.qid });
+    }
+
+    // --- Step 2: Query Wikidata for species not in local dataset ---
+    logger.info({ name, cacheKey, challenge }, "Not in local dataset — fetching from Wikidata (animals)");
+
+    try {
+      const result = await queryAnimalWikidata(name);
+
+      if (result.valid) {
+        cacheSetAnimals(cacheKey, { valid: true, qid: result.qid });
+      }
+
+      const response: AnimalsValidateResponse = { valid: result.valid };
+      if (result.qid) response.qid = result.qid;
+      if (result.reason) response.reason = result.reason as AnimalsValidateResponse["reason"];
+
+      return NextResponse.json(response);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+
+      if (message === "rate_limited") {
+        return NextResponse.json(
+          { error: "rate_limited", retryAfter: 10 },
+          { status: 429 }
+        );
+      }
+
+      // --- Wikidata unreachable & not in local dataset → not_found ---
+      logger.warn({ err: message, challenge }, "Wikidata unreachable, not in local dataset — marking as not_found (animals)");
+      return NextResponse.json({ valid: false, reason: "not_found" });
+    }
+  }
+
+  // ── Human Challenges (Women / Men) ─────────────────────────────────
+
+  // Validate gender
+  if (rawGender !== "female" && rawGender !== "male") {
+    return NextResponse.json(
+      { error: "Invalid 'gender' parameter. Must be 'female' or 'male'." },
+      { status: 400 }
+    );
+  }
+
+  const gender: Gender = rawGender;
+  const cacheKey = name.toLowerCase();
 
   // --- Cache lookup ---
   const cached = cacheGet(cacheKey, gender);

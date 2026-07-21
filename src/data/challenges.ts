@@ -39,6 +39,14 @@ const challenges: Challenge[] = [
       "Gotta name 'em all! Name 100 Pokémon across all 9 generations — instant local validation against 300+ Pokémon.",
     color: "bg-[#FFCB05]",
   },
+  {
+    slug: "name-100-animals",
+    title: "Name 100 Animals",
+    emoji: "🦁",
+    description:
+      "Name 100 animal species from across the animal kingdom — Wikidata-verified taxonomy ensures only true species count. Mammals, birds, reptiles, fish, insects & extinct animals!",
+    color: "bg-[#FF6B35]",
+  },
 ];
 
 export default challenges;
