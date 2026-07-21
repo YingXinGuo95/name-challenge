@@ -56,7 +56,7 @@ async function queryAnimalWikidata(name: string): Promise<{
   qid?: string;
   reason?: string;
 }> {
-  logger.info({ name }, "Querying Wikidata for animal species (REST API + SPARQL ASK)");
+  logger.info({ name }, "Querying Wikidata for animal species (REST API)");
   return validateAnimalWikidata(name);
 }
 
