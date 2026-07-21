@@ -20,7 +20,8 @@ export const USER_AGENT =
  * env vars — we must configure a ProxyAgent explicitly.
  */
 function buildFetchInit(signal: AbortSignal): RequestInit {
-  const init: RequestInit & { dispatcher?: import("undici").Dispatcher } = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const init: RequestInit & { dispatcher?: any } = {
     headers: {
       "User-Agent": USER_AGENT,
       Accept: "application/json",
