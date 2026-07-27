@@ -13,6 +13,10 @@ const GA_MEASUREMENT_ID = "G-RQKGV34BL2";
  * @see https://nextjs.org/docs/app/building-your-application/optimizing/third-party-libraries
  */
 export function GoogleAnalytics() {
+  if (process.env.NODE_ENV !== "production") {
+    return null;
+  }
+
   return (
     <>
       <Script
