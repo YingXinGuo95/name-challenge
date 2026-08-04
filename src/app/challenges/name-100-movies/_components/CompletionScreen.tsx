@@ -122,9 +122,10 @@ export function CompletionScreen({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          challenge_slug: challengeSlug,
           nickname: nickname.trim(),
-          time_seconds: elapsedSeconds,
+          score: targetCount,
+          elapsed_seconds: elapsedSeconds,
+          challenge_slug: challengeSlug,
         }),
       });
 
