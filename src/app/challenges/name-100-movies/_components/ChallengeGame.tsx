@@ -190,6 +190,13 @@ export function ChallengeGame() {
           hasCompleted={hasCompleted}
         />
 
+        {/* Exact-title tip */}
+        <p className="w-full max-w-xl px-1 text-center text-xs font-medium leading-relaxed text-muted-foreground/70">
+          💡 Tip: use the exact title — punctuation matters (e.g.{" "}
+          <span className="font-bold text-[#9333EA]">Spider-Man</span>, not
+          &quot;spider man&quot;).
+        </p>
+
         {/* Error Banner */}
         {error && (
           <div

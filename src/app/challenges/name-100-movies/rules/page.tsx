@@ -366,7 +366,7 @@ export default function RulesPage() {
                 },
                 {
                   q: "Can I use short or partial titles?",
-                  a: "The challenge checks titles against Wikidata's database. For best results, use the full title (e.g., \"Star Wars\" or \"The Godfather\"). Wikidata handles many variations, but full titles work most reliably.",
+                  a: "The challenge checks titles against Wikidata's database. For best results, use the full, punctuation-correct title (e.g., \"Spider-Man\" with a hyphen, not \"spider man\"). Wikidata handles many variations, but full titles work most reliably.",
                 },
                 {
                   q: "What if a title I submit is marked invalid?",

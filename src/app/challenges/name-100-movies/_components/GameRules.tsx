@@ -73,7 +73,8 @@ export function GameRules() {
           💡 Tip:
         </strong>{" "}
         Think across genres — classics, sci-fi, animation, action, horror, and
-        Oscar winners!
+        Oscar winners! Use the exact title (e.g. Spider-Man) — punctuation
+        matters.
       </p>
 
       {/* Link to full rules page */}
