@@ -126,7 +126,7 @@ const FAMOUS_MOVIES: Record<string, string> = {
   "Finding Nemo": "Q132863",
   "WALL-E": "Q104905",
   "Up": "Q174811",
-  "Coco": "Q5815826",
+  //"Coco": "Q5815826",
   "Inside Out": "Q6144664",
   "Ratatouille": "Q170035",
   "Monsters, Inc.": "Q187726",

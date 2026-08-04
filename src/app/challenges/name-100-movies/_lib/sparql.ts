@@ -1,14 +1,84 @@
 // ── Wikidata API Endpoints ──────────────────────────────────────────
 
-/** Wikidata REST API for entity search (same indexed search as the search box). */
+/** Wikidata REST API base. */
 const WIKIDATA_API = "https://www.wikidata.org/w/api.php";
-
-/** Wikidata SPARQL endpoint — only used for lightweight ASK verification. */
-export const WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
 
 /** User-Agent header required by Wikidata policy. */
 export const USER_AGENT =
   "Name100Challenge/1.0 (https://name100challenge.me; contact@name100challenge.me)";
+
+// Film-class Q-IDs: direct P31 values that indicate an entity is a film.
+// Every ID is Q11424 (film) itself or a P279 subclass of it — the SPARQL
+// equivalent of `wdt:P31/wdt:P279* wd:Q11424`. Keep this set in sync with
+// Wikidata; see famous-movies.ts for the "verify Q-IDs" convention.
+const FILM_CLASS_QIDS = new Set<string>([
+  // Base + formats
+  "Q11424", // film
+  "Q24869", // feature film
+  "Q506240", // television film
+  "Q93204", // documentary film
+  "Q202866", // animated film
+  "Q2916889", // animated feature film
+  "Q24862", // short film
+  "Q17517379", // animated short film
+  "Q22692", // silent film
+  "Q20650540", // anime
+  // Genre classes (film subclasses that some films use directly as P31)
+  "Q157443", // comedy film
+  "Q188473", // action film
+  "Q193247", // horror film
+  "Q471839", // science fiction film
+  "Q842256", // musical film
+  "Q278454", // western film
+  "Q959790", // crime film
+  "Q319221", // adventure film
+  "Q1169555", // fantasy film
+  "Q2484376", // thriller film
+  "Q406359", // romance film
+  "Q211145", // drama film
+  "Q111260", // war film
+  "Q645928", // biographical film
+  "Q860626", // romantic comedy
+  "Q1616074", // mystery film
+  "Q1187301", // comedy-drama
+  "Q597633", // art film
+]);
+
+// ── Proxy-aware fetch ───────────────────────────────────────────────
+
+/**
+ * Build fetch init with proxy dispatcher if HTTP_PROXY / HTTPS_PROXY is set.
+ * Node.js's built-in fetch (undici) does NOT automatically respect these
+ * env vars — we must configure a ProxyAgent explicitly.
+ */
+function buildFetchInit(signal: AbortSignal): RequestInit {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const init: RequestInit & { dispatcher?: any } = {
+    headers: {
+      "User-Agent": USER_AGENT,
+      Accept: "application/json",
+    },
+    signal,
+  };
+
+  const proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+  if (proxy) {
+    // Dynamic import to avoid issues if undici types aren't available
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { ProxyAgent } = require("undici");
+      init.dispatcher = new ProxyAgent(proxy);
+    } catch {
+      // undici ProxyAgent not available — fall through without proxy
+    }
+  }
+
+  return init;
+}
+
+function proxyFetch(url: string, timeoutMs = 3_000): Promise<Response> {
+  return fetch(url, buildFetchInit(AbortSignal.timeout(timeoutMs)));
+}
 
 // ── Entity Search (REST API) ────────────────────────────────────────
 
@@ -24,11 +94,11 @@ interface WbSearchResponse {
 
 /**
  * Search Wikidata entities using the REST API (wbsearchentities).
- * Uses the same indexed search as the Wikidata search box — fast (~100-200ms).
+ * Same indexed search as the Wikidata search box — fast (~100-200ms).
  */
 export async function searchEntities(
   name: string,
-  limit = 5
+  limit = 3
 ): Promise<WbSearchResult[]> {
   const url = `${WIKIDATA_API}?${new URLSearchParams({
     action: "wbsearchentities",
@@ -39,53 +109,67 @@ export async function searchEntities(
     limit: String(limit),
   })}`;
 
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      Accept: "application/json",
-    },
-    signal: AbortSignal.timeout(8_000),
-  });
+  const res = await proxyFetch(url, 3_000);
 
-  if (res.status === 429) {
-    throw new Error("rate_limited");
-  }
-  if (!res.ok) {
-    throw new Error(`Entity search returned ${res.status}`);
-  }
+  if (res.status === 429) throw new Error("rate_limited");
+  if (!res.ok) throw new Error(`Entity search returned ${res.status}`);
 
   const data: WbSearchResponse = await res.json();
   return data.search ?? [];
 }
 
-// ── Film Verification (lightweight SPARQL ASK) ──────────────────────
+// ── Batch Claims Fetch (REST API — replaces all SPARQL) ─────────────
+
+interface WbEntityClaims {
+  id: string;
+  claims?: Record<string, Array<{ mainsnak?: { datavalue?: { value?: { id?: string } } } }>>;
+}
+
+interface WbEntitiesResponse {
+  entities: Record<string, WbEntityClaims>;
+}
 
 /**
- * Verify that a Wikidata entity is a film (Q11424) or any subclass of film
- * (e.g. animated film, documentary, feature film) via P31/P279* traversal.
- * Uses a lightweight ASK query against a specific Q-ID — instant lookup, no scan.
+ * Fetch P31 (instance of) claims for multiple candidate Q-IDs in a SINGLE
+ * REST API call (wbgetentities). Returns qid → list of all P31 value Q-IDs.
  */
-export async function verifyFilm(qid: string): Promise<boolean> {
-  const query = `ASK WHERE { wd:${qid} wdt:P31/wdt:P279* wd:Q11424. }`;
-  const url = `${WIKIDATA_SPARQL_ENDPOINT}?format=json&query=${encodeURIComponent(query)}`;
+async function batchGetFilmClasses(qids: string[]): Promise<Map<string, string[]>> {
+  const result = new Map<string, string[]>();
 
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      Accept: "application/json",
-    },
-    signal: AbortSignal.timeout(8_000),
-  });
+  if (qids.length === 0) return result;
 
-  if (res.status === 429) {
-    throw new Error("rate_limited");
+  const url = `${WIKIDATA_API}?${new URLSearchParams({
+    action: "wbgetentities",
+    ids: qids.join("|"),
+    props: "claims",
+    format: "json",
+  })}`;
+
+  const res = await proxyFetch(url, 4_000);
+
+  if (res.status === 429) throw new Error("rate_limited");
+  if (!res.ok) throw new Error(`Get entities returned ${res.status}`);
+
+  const data: WbEntitiesResponse = await res.json();
+
+  for (const qid of qids) {
+    const entity = data.entities?.[qid];
+    const p31: string[] = [];
+    if (entity?.claims) {
+      for (const claim of entity.claims["P31"] ?? []) {
+        const value = claim.mainsnak?.datavalue?.value?.id;
+        if (value) p31.push(value);
+      }
+    }
+    result.set(qid, p31);
   }
-  if (!res.ok) {
-    throw new Error(`ASK query returned ${res.status}`);
-  }
 
-  const data: { boolean: boolean } = await res.json();
-  return data.boolean === true;
+  return result;
+}
+
+/** True if any P31 value is a known film class. */
+function isFilmClass(p31Values: string[]): boolean {
+  return p31Values.some((value) => FILM_CLASS_QIDS.has(value));
 }
 
 // ── Combined Validation ─────────────────────────────────────────────
@@ -97,33 +181,33 @@ export interface ValidationResult {
 }
 
 /**
- * Validate a movie title against Wikidata: search for the entity via REST API,
- * then verify it's a film (or subclass of film) with a lightweight SPARQL ASK.
+ * Validate a movie title against Wikidata with only 2 HTTP calls total:
  *
- * @param name  The movie title to search for.
+ *   1. wbsearchentities → find candidate Q-IDs
+ *   2. wbgetentities (batch) → fetch P31 for all candidates at once
+ *
+ * This replaces the previous search + up to 3 sequential SPARQL ASK calls.
+ * The REST API is faster and works better through proxies.
  */
 export async function validateWikidata(
   name: string
 ): Promise<ValidationResult> {
-  // Step 1: Fast entity search via REST API
-  const candidates = await searchEntities(name);
+  // Step 1: Search for entity (1 HTTP call)
+  const candidates = await searchEntities(name, 3);
 
   if (candidates.length === 0) {
     return { valid: false, reason: "not_found" };
   }
 
-  // Step 2: Verify candidates — check film class with ASK query
-  // Try up to 3 candidates (the search API ranks by relevance)
-  const topCandidates = candidates.slice(0, 3);
-  for (const candidate of topCandidates) {
-    try {
-      const isMovie = await verifyFilm(candidate.id);
-      if (isMovie) {
-        return { valid: true, qid: candidate.id };
-      }
-    } catch {
-      // Skip this candidate if verification fails, try next one
-      continue;
+  // Step 2: Batch-fetch P31 film classes for ALL candidates (1 HTTP call)
+  const qids = candidates.map((c) => c.id);
+  const filmClasses = await batchGetFilmClasses(qids);
+
+  // Step 3: First candidate that's a known film class wins
+  for (const candidate of candidates) {
+    const p31 = filmClasses.get(candidate.id);
+    if (p31 && isFilmClass(p31)) {
+      return { valid: true, qid: candidate.id };
     }
   }
 
