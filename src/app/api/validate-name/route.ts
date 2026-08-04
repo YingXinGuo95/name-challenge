@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cacheGet, cacheSet } from "@/app/challenges/name-100-women/_lib/cache";
 import { cacheGet as cacheGetAnimals, cacheSet as cacheSetAnimals } from "@/app/challenges/name-100-animals/_lib/cache";
+import { cacheGet as cacheGetMovies, cacheSet as cacheSetMovies } from "@/app/challenges/name-100-movies/_lib/cache";
 import {
   validateWikidata,
   type Gender,
@@ -8,13 +9,19 @@ import {
 import {
   validateWikidata as validateAnimalWikidata,
 } from "@/app/challenges/name-100-animals/_lib/sparql";
+import {
+  validateWikidata as validateMovieWikidata,
+} from "@/app/challenges/name-100-movies/_lib/sparql";
 import { ValidateResponse } from "@/app/challenges/name-100-women/_lib/types";
 import { ValidateResponse as AnimalsValidateResponse } from "@/app/challenges/name-100-animals/_lib/types";
+import { ValidateResponse as MoviesValidateResponse } from "@/app/challenges/name-100-movies/_lib/types";
 import logger from "@/lib/logger";
 import { localLookup as localLookupWomen } from "@/app/challenges/name-100-women/_lib/famous-women";
 import config from "@/app/challenges/name-100-women/_lib/config";
 import { localLookup as localLookupAnimals } from "@/app/challenges/name-100-animals/_lib/animals";
 import animalsConfig from "@/app/challenges/name-100-animals/_lib/config";
+import { localLookup as localLookupMovies } from "@/app/challenges/name-100-movies/_lib/famous-movies";
+import moviesConfig from "@/app/challenges/name-100-movies/_lib/config";
 
 // ── Rate Limiting (simple in-memory) ────────────────────────────────
 
@@ -60,6 +67,15 @@ async function queryAnimalWikidata(name: string): Promise<{
   return validateAnimalWikidata(name);
 }
 
+async function queryMovieWikidata(name: string): Promise<{
+  valid: boolean;
+  qid?: string;
+  reason?: string;
+}> {
+  logger.info({ name }, "Querying Wikidata for movies (REST API + SPARQL ASK)");
+  return validateMovieWikidata(name);
+}
+
 // ── API Handler ─────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
@@ -96,6 +112,68 @@ export async function GET(request: NextRequest) {
         },
       }
     );
+  }
+
+  // ── Movies Challenge ──────────────────────────────────────────────
+
+  if (challenge === "movies" || challenge === "name-100-movies") {
+    const cacheKey = name.toLowerCase();
+
+    // --- Cache lookup ---
+    const cached = cacheGetMovies(cacheKey);
+    if (cached) {
+      logger.info({ name, cacheKey, challenge }, "Cache hit (movies)");
+      const response: MoviesValidateResponse = { valid: cached.valid };
+      if (cached.qid) response.qid = cached.qid;
+      return NextResponse.json(response);
+    }
+
+    // --- Step 1: Local dataset lookup (always checked first if local mode or hit) ---
+    if (moviesConfig.dataSource === "local") {
+      logger.info({ name, cacheKey, challenge }, "Local-only mode (movies)");
+      const local = localLookupMovies(name);
+      if (local) {
+        cacheSetMovies(cacheKey, { valid: true, qid: local.qid });
+        return NextResponse.json({ valid: true, qid: local.qid });
+      }
+      return NextResponse.json({ valid: false, reason: "not_found" });
+    }
+
+    const localMatch = localLookupMovies(name);
+    if (localMatch) {
+      logger.info({ name, cacheKey, challenge }, "Local dataset hit (movies)");
+      cacheSetMovies(cacheKey, { valid: true, qid: localMatch.qid });
+      return NextResponse.json({ valid: true, qid: localMatch.qid });
+    }
+
+    // --- Step 2: Query Wikidata ---
+    logger.info({ name, cacheKey, challenge }, "Not in local dataset — fetching from Wikidata (movies)");
+
+    try {
+      const result = await queryMovieWikidata(name);
+
+      if (result.valid) {
+        cacheSetMovies(cacheKey, { valid: true, qid: result.qid });
+      }
+
+      const response: MoviesValidateResponse = { valid: result.valid };
+      if (result.qid) response.qid = result.qid;
+      if (result.reason) response.reason = result.reason as MoviesValidateResponse["reason"];
+
+      return NextResponse.json(response);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+
+      if (message === "rate_limited") {
+        return NextResponse.json(
+          { error: "rate_limited", retryAfter: 10 },
+          { status: 429 }
+        );
+      }
+
+      logger.warn({ err: message, challenge }, "Wikidata unreachable, not in local dataset — marking as not_found (movies)");
+      return NextResponse.json({ valid: false, reason: "not_found" });
+    }
   }
 
   // ── Animals Challenge ──────────────────────────────────────────────

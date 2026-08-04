@@ -47,6 +47,14 @@ const challenges: Challenge[] = [
       "Name 100 animal species from across the animal kingdom — Wikidata-verified taxonomy ensures only true species count. Mammals, birds, reptiles, fish, insects & extinct animals!",
     color: "bg-[#FF6B35]",
   },
+  {
+    slug: "name-100-movies",
+    title: "Name 100 Movies",
+    emoji: "🎬",
+    description:
+      "Name 100 famous movies — verified by Wikidata. From timeless classics to modern blockbusters, Oscars winners to cult hits!",
+    color: "bg-[#9333EA]",
+  },
 ];
 
 export default challenges;
