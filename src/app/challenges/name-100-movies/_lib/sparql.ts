@@ -1,0 +1,131 @@
+// ── Wikidata API Endpoints ──────────────────────────────────────────
+
+/** Wikidata REST API for entity search (same indexed search as the search box). */
+const WIKIDATA_API = "https://www.wikidata.org/w/api.php";
+
+/** Wikidata SPARQL endpoint — only used for lightweight ASK verification. */
+export const WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
+
+/** User-Agent header required by Wikidata policy. */
+export const USER_AGENT =
+  "Name100Challenge/1.0 (https://name100challenge.me; contact@name100challenge.me)";
+
+// ── Entity Search (REST API) ────────────────────────────────────────
+
+interface WbSearchResult {
+  id: string;
+  label: string;
+  description?: string;
+}
+
+interface WbSearchResponse {
+  search: WbSearchResult[];
+}
+
+/**
+ * Search Wikidata entities using the REST API (wbsearchentities).
+ * Uses the same indexed search as the Wikidata search box — fast (~100-200ms).
+ */
+export async function searchEntities(
+  name: string,
+  limit = 5
+): Promise<WbSearchResult[]> {
+  const url = `${WIKIDATA_API}?${new URLSearchParams({
+    action: "wbsearchentities",
+    search: name,
+    language: "en",
+    format: "json",
+    type: "item",
+    limit: String(limit),
+  })}`;
+
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": USER_AGENT,
+      Accept: "application/json",
+    },
+    signal: AbortSignal.timeout(8_000),
+  });
+
+  if (res.status === 429) {
+    throw new Error("rate_limited");
+  }
+  if (!res.ok) {
+    throw new Error(`Entity search returned ${res.status}`);
+  }
+
+  const data: WbSearchResponse = await res.json();
+  return data.search ?? [];
+}
+
+// ── Film Verification (lightweight SPARQL ASK) ──────────────────────
+
+/**
+ * Verify that a Wikidata entity is a film (Q11424) or any subclass of film
+ * (e.g. animated film, documentary, feature film) via P31/P279* traversal.
+ * Uses a lightweight ASK query against a specific Q-ID — instant lookup, no scan.
+ */
+export async function verifyFilm(qid: string): Promise<boolean> {
+  const query = `ASK WHERE { wd:${qid} wdt:P31/wdt:P279* wd:Q11424. }`;
+  const url = `${WIKIDATA_SPARQL_ENDPOINT}?format=json&query=${encodeURIComponent(query)}`;
+
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": USER_AGENT,
+      Accept: "application/json",
+    },
+    signal: AbortSignal.timeout(8_000),
+  });
+
+  if (res.status === 429) {
+    throw new Error("rate_limited");
+  }
+  if (!res.ok) {
+    throw new Error(`ASK query returned ${res.status}`);
+  }
+
+  const data: { boolean: boolean } = await res.json();
+  return data.boolean === true;
+}
+
+// ── Combined Validation ─────────────────────────────────────────────
+
+export interface ValidationResult {
+  valid: boolean;
+  qid?: string;
+  reason?: string;
+}
+
+/**
+ * Validate a movie title against Wikidata: search for the entity via REST API,
+ * then verify it's a film (or subclass of film) with a lightweight SPARQL ASK.
+ *
+ * @param name  The movie title to search for.
+ */
+export async function validateWikidata(
+  name: string
+): Promise<ValidationResult> {
+  // Step 1: Fast entity search via REST API
+  const candidates = await searchEntities(name);
+
+  if (candidates.length === 0) {
+    return { valid: false, reason: "not_found" };
+  }
+
+  // Step 2: Verify candidates — check film class with ASK query
+  // Try up to 3 candidates (the search API ranks by relevance)
+  const topCandidates = candidates.slice(0, 3);
+  for (const candidate of topCandidates) {
+    try {
+      const isMovie = await verifyFilm(candidate.id);
+      if (isMovie) {
+        return { valid: true, qid: candidate.id };
+      }
+    } catch {
+      // Skip this candidate if verification fails, try next one
+      continue;
+    }
+  }
+
+  return { valid: false, reason: "not_movie" };
+}
