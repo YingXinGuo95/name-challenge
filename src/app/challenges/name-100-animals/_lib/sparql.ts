@@ -5,7 +5,7 @@ const WIKIDATA_API = "https://www.wikidata.org/w/api.php";
 
 /** User-Agent header required by Wikidata policy. */
 export const USER_AGENT =
-  "Name100Challenge/1.0 (https://name100challenge.me; yingxinguo.cn@gmail.com)";
+  "Name100Challenge/1.0 (https://name100challenge.me; contact@name100challenge.me)";
 
 // Taxonomy Q-IDs:
 // Q7432  = species (taxon rank — ACCEPT)

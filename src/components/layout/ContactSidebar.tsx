@@ -4,7 +4,7 @@ const contactItems = [
   {
     icon: Mail,
     label: "Email Me",
-    href: "mailto:yingxinguo.cn@gmail.com",
+    href: "mailto:contact@name100challenge.me",
     desc: "Send feedback",
   },
   {

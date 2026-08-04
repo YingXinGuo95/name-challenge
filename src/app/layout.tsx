@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { CookieBanner } from "@/components/layout/CookieBanner";
 import { JsonLd } from "@/components/layout/JsonLd";
 import { GoogleAnalytics } from "@/components/layout/GoogleAnalytics";
 import { AuthProvider } from "@/lib/auth/auth-context";
@@ -118,6 +119,7 @@ export default function RootLayout({
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
+            <CookieBanner />
           </div>
         </AuthProvider>
       </body>
