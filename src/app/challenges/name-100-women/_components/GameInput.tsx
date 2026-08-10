@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send, Loader2 } from "lucide-react";
 
 interface GameInputProps {
@@ -13,6 +13,17 @@ export function GameInput({ onAdd, disabled = false, hasCompleted = false }: Gam
   const [value, setValue] = useState("");
   const [isShaking, setIsShaking] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevDisabled = useRef(disabled);
+
+  // Restore focus when validation finishes and the input is re-enabled.
+  // Browsers drop focus from a disabled input, so the post-submit focus()
+  // would otherwise be lost while isChecking holds the input disabled.
+  useEffect(() => {
+    if (prevDisabled.current && !disabled) {
+      inputRef.current?.focus();
+    }
+    prevDisabled.current = disabled;
+  }, [disabled]);
 
   const isDisabled = disabled || hasCompleted;
 
