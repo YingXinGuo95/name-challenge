@@ -7,6 +7,7 @@ import { ProgressBar } from "./ProgressBar";
 import { CompletionScreen } from "./CompletionScreen";
 import { GameRules } from "./GameRules";
 import { LiveLeaderboard } from "@/components/leaderboard/LiveLeaderboard";
+import { MobileLeaderboardDialog } from "@/components/leaderboard/MobileLeaderboardDialog";
 import { findDuplicate, clearSubmissionRecord } from "../_lib/storage";
 import { GameState, ValidateResponse, ValidatedName } from "../_lib/types";
 import { AlertCircle, Sparkles, Timer } from "lucide-react";
@@ -182,6 +183,9 @@ export function ChallengeGame() {
             Type a name and press Enter or click Add.
           </p>
         </div>
+
+        {/* Mobile leaderboard dialog (mobile only) */}
+        <MobileLeaderboardDialog challengeSlug="name-100-women" />
 
         {/* Input */}
         <GameInput

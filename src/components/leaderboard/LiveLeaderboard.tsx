@@ -102,7 +102,7 @@ export function LiveLeaderboard({ challengeSlug }: { challengeSlug?: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex w-[280px] flex-col items-center gap-3 rounded-[24px] border-[2.5px] border-[#2D2D2D]/20 bg-white/60 px-4 py-10">
+      <div className="flex w-full lg:w-[280px] flex-col items-center gap-3 rounded-[24px] border-[2.5px] border-[#2D2D2D]/20 bg-white/60 px-4 py-10">
         <Loader2 className="h-5 w-5 animate-spin text-[#2D2D2D]/40" />
         <span className="text-xs font-medium text-muted-foreground">
           Loading leaderboard...
@@ -115,7 +115,7 @@ export function LiveLeaderboard({ challengeSlug }: { challengeSlug?: string }) {
 
   if (error) {
     return (
-      <div className="flex w-[280px] flex-col items-center gap-3 rounded-[24px] border-[2.5px] border-[#FF8FAB]/40 bg-[#FF8FAB]/10 px-4 py-8">
+      <div className="flex w-full lg:w-[280px] flex-col items-center gap-3 rounded-[24px] border-[2.5px] border-[#FF8FAB]/40 bg-[#FF8FAB]/10 px-4 py-8">
         <AlertCircle className="h-5 w-5 text-[#FF8FAB]" />
         <span className="text-xs font-bold text-[#2D2D2D]">
           Failed to load
@@ -139,7 +139,7 @@ export function LiveLeaderboard({ challengeSlug }: { challengeSlug?: string }) {
 
   if (entries.length === 0) {
     return (
-      <div className="flex w-[280px] flex-col items-center gap-3 rounded-[24px] border-[2.5px] border-dashed border-[#2D2D2D]/25 bg-white/40 px-4 py-10 text-center">
+      <div className="flex w-full lg:w-[280px] flex-col items-center gap-3 rounded-[24px] border-[2.5px] border-dashed border-[#2D2D2D]/25 bg-white/40 px-4 py-10 text-center">
         <Trophy className="h-8 w-8 text-[#2D2D2D]/25" />
         <p className="text-xs font-bold uppercase tracking-wide text-[#2D2D2D]/50">
           No Scores Yet
@@ -158,7 +158,7 @@ export function LiveLeaderboard({ challengeSlug }: { challengeSlug?: string }) {
   // ── Leaderboard Table ─────────────────────────────────────────────
 
   return (
-    <div className="flex w-[280px] flex-col gap-3">
+    <div className="flex w-full lg:w-[280px] flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
