@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { CookieBanner } from "@/components/layout/CookieBanner";
 import { JsonLd } from "@/components/layout/JsonLd";
 import { GoogleAnalytics } from "@/components/layout/GoogleAnalytics";
+import { GoogleAdSense } from "@/components/layout/GoogleAdSense";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import "./globals.css";
 
@@ -113,6 +114,7 @@ export default function RootLayout({
     <html className={cn("font-sans", inter.variable)} lang="en">
       <body className="min-h-screen bg-background antialiased">
         <GoogleAnalytics />
+        <GoogleAdSense />
         <JsonLd data={webAppSchema} />
         <AuthProvider>
           <div className="flex min-h-screen flex-col">
