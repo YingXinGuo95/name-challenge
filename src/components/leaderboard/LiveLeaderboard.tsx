@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Trophy, Medal, Loader2, AlertCircle, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import type { LeaderboardEntry } from "@/lib/leaderboard/types";
+import { TruncatedText } from "@/components/leaderboard/TruncatedText";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -11,6 +12,16 @@ function formatTime(totalSeconds: number): string {
   const s = totalSeconds % 60;
   if (m > 0) return `${m}m ${s}s`;
   return `${s}s`;
+}
+
+function formatDate(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function getRankBadge(rank: number): { icon: React.ReactNode; color: string } {
@@ -181,6 +192,7 @@ export function LiveLeaderboard({ challengeSlug }: { challengeSlug?: string }) {
         <div className="flex items-center gap-1 border-b-[2.5px] border-[#2D2D2D]/10 bg-[#F5E6D3]/60 px-3 py-2 text-[10px] font-extrabold uppercase tracking-wider text-[#2D2D2D]/50">
           <span className="w-6 text-center">#</span>
           <span className="flex-1">Name</span>
+          <span className="w-[68px] text-right">Date</span>
           <span className="w-14 text-right">Time</span>
         </div>
 
@@ -203,11 +215,14 @@ export function LiveLeaderboard({ challengeSlug }: { challengeSlug?: string }) {
                 </span>
 
                 {/* Nickname */}
-                <span
-                  className="flex-1 truncate text-[#2D2D2D]/80"
-                  title={entry.nickname}
-                >
-                  {entry.nickname}
+                <TruncatedText
+                  text={entry.nickname}
+                  className="flex-1 text-[#2D2D2D]/80"
+                />
+
+                {/* Date */}
+                <span className="w-[68px] text-right text-[10px] tabular-nums text-[#2D2D2D]/40">
+                  {formatDate(entry.created_at)}
                 </span>
 
                 {/* Time */}

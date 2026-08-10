@@ -2,6 +2,7 @@
 
 import { Trophy, Medal, Loader2, AlertCircle } from "lucide-react";
 import type { LeaderboardEntry } from "@/lib/leaderboard/types";
+import { TruncatedText } from "@/components/leaderboard/TruncatedText";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -10,6 +11,16 @@ function formatTime(totalSeconds: number): string {
   const s = totalSeconds % 60;
   if (m > 0) return `${m}m ${s}s`;
   return `${s}s`;
+}
+
+function formatDate(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function getRankBadge(rank: number): { icon: React.ReactNode; color: string } {
@@ -96,6 +107,7 @@ export function Leaderboard({
         <div className="flex items-center gap-2 border-b-[2.5px] border-[#2D2D2D]/10 bg-[#F5E6D3]/60 px-4 py-3 text-xs font-extrabold uppercase tracking-wider text-[#2D2D2D]/60">
           <span className="w-8 text-center">#</span>
           <span className="flex-1">Nickname</span>
+          <span className="w-20 text-right">Date</span>
           <span className="w-20 text-right">Time</span>
         </div>
 
@@ -123,13 +135,16 @@ export function Leaderboard({
                 </span>
 
                 {/* Nickname */}
-                <span
-                  className={`flex-1 truncate ${
+                <TruncatedText
+                  text={entry.nickname}
+                  className={`flex-1 ${
                     isCurrentUser ? "font-extrabold text-[#2D2D2D]" : "text-[#2D2D2D]/80"
                   }`}
-                  title={entry.nickname}
-                >
-                  {entry.nickname}
+                />
+
+                {/* Date */}
+                <span className="w-20 text-right text-xs tabular-nums text-[#2D2D2D]/40">
+                  {formatDate(entry.created_at)}
                 </span>
 
                 {/* Time */}
