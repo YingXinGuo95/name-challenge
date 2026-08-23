@@ -83,14 +83,14 @@ export function CompletionScreen({
         angle: 60,
         spread: 55,
         origin: { x: 0, y: 0.7 },
-        colors: ["#FFE066", "#6CB4EE", "#E63946", "#5CC9C7", "#FFD700"],
+        colors: ["#FFE066", "#6CB4EE", "#A0522D", "#5CC9C7", "#FFD700"],
       });
       confetti({
         particleCount: 3,
         angle: 120,
         spread: 55,
         origin: { x: 1, y: 0.7 },
-        colors: ["#FFE066", "#6CB4EE", "#E63946", "#5CC9C7", "#FFD700"],
+        colors: ["#FFE066", "#6CB4EE", "#A0522D", "#5CC9C7", "#FFD700"],
       });
 
       if (Date.now() < end) {
@@ -103,7 +103,7 @@ export function CompletionScreen({
       particleCount: 80,
       spread: 100,
       origin: { y: 0.6 },
-      colors: ["#FFE066", "#6CB4EE", "#E63946", "#5CC9C7", "#FFD700"],
+      colors: ["#FFE066", "#6CB4EE", "#A0522D", "#5CC9C7", "#FFD700"],
     });
 
     // Continuous side stream
@@ -278,7 +278,7 @@ export function CompletionScreen({
           particleCount: 50,
           spread: 60,
           origin: { y: 0.5 },
-          colors: ["#FFE066", "#6CB4EE", "#E63946", "#5CC9C7", "#FFD700"],
+          colors: ["#FFE066", "#6CB4EE", "#A0522D", "#5CC9C7", "#FFD700"],
         });
 
         setScreenState("leaderboard");
@@ -330,7 +330,7 @@ export function CompletionScreen({
             </h2>
             <p className="text-sm text-gray-600">
               You named{" "}
-              <span className="font-bold text-[#E63946]">{targetCount} foods</span>.
+              <span className="font-bold text-[#A0522D]">{targetCount} foods</span>.
             </p>
           </div>
 
@@ -376,7 +376,7 @@ export function CompletionScreen({
             {!alreadySubmitted && isCheckingRank && (
               <button
                 disabled
-                className="inline-flex items-center gap-2 rounded-full bg-[#E63946]/50 px-6 py-3 text-sm font-bold text-[#2D2D2D]/50"
+                className="inline-flex items-center gap-2 rounded-full bg-[#A0522D]/50 px-6 py-3 text-sm font-bold text-[#2D2D2D]/50"
               >
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Checking rank...
@@ -387,14 +387,14 @@ export function CompletionScreen({
               <div className="flex flex-col items-center gap-2">
                 <p className="text-sm font-bold text-[#2D2D2D]">
                   🎉 You&apos;re in the{" "}
-                  <span className="text-base font-extrabold text-[#E63946]">
+                  <span className="text-base font-extrabold text-[#A0522D]">
                     top {currentRank}
                   </span>
                   ! Submit your score now!
                 </p>
                 <button
                   onClick={() => setScreenState("submitting")}
-                  className="inline-flex items-center gap-2 rounded-full bg-[#E63946] px-6 py-3 text-sm font-bold text-white transition-transform hover:scale-105"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#A0522D] px-6 py-3 text-sm font-bold text-white transition-transform hover:scale-105"
                 >
                   <Send className="h-4 w-4" />
                   Submit Score
@@ -414,7 +414,7 @@ export function CompletionScreen({
             {!alreadySubmitted && !isCheckingRank && currentRank === null && (
               <button
                 onClick={() => setScreenState("submitting")}
-                className="inline-flex items-center gap-2 rounded-full bg-[#E63946] px-6 py-3 text-sm font-bold text-white transition-transform hover:scale-105"
+                className="inline-flex items-center gap-2 rounded-full bg-[#A0522D] px-6 py-3 text-sm font-bold text-white transition-transform hover:scale-105"
               >
                 <Trophy className="h-4 w-4" />
                 Submit Score
@@ -443,10 +443,10 @@ export function CompletionScreen({
 
         {/* Already submitted reminder */}
         {alreadySubmitted && (
-          <div className="rounded-full border-[2.5px] border-[#E63946] bg-[#E63946]/10 px-5 py-2 text-center">
+          <div className="rounded-full border-[2.5px] border-[#A0522D] bg-[#A0522D]/10 px-5 py-2 text-center">
             <p className="text-sm font-bold text-[#2D2D2D]">
               You ranked{" "}
-              <span className="text-base font-extrabold text-[#E63946]">
+              <span className="text-base font-extrabold text-[#A0522D]">
                 #{submissionResult?.rank ?? "?"}
               </span>
               {" "}on the leaderboard!
@@ -494,7 +494,7 @@ export function CompletionScreen({
           {/* Error Banner */}
           {submitError && (
             <div
-              className="retro-card flex w-full items-center gap-2 bg-[#E63946]/30 px-4 py-3 text-sm font-bold text-[#2D2D2D]"
+              className="retro-card flex w-full items-center gap-2 bg-[#A0522D]/30 px-4 py-3 text-sm font-bold text-[#2D2D2D]"
               role="alert"
             >
               <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />

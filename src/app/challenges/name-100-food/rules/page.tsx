@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/layout/JsonLd";
-import challenges from "@/data/challenges";
 import config from "../_lib/config";
 import {
   Target,
@@ -14,8 +13,6 @@ import {
   Sparkles,
   HelpCircle,
 } from "lucide-react";
-
-const challenge = challenges.find((c) => c.slug === "name-100-food");
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://name100challenge.me";
 const pageUrl = `${siteUrl}/challenges/name-100-food/rules`;
@@ -154,8 +151,8 @@ function SectionCard({
       className="overflow-hidden rounded-[20px] border-[2.5px] border-[#2D2D2D] bg-white"
       style={{ boxShadow: "3px 5px 0 rgba(0,0,0,0.08)" }}
     >
-      <div className="flex items-center gap-2 border-b-[2.5px] border-[#2D2D2D]/10 bg-[#E63946]/5 px-5 py-3.5">
-        <Icon className="h-5 w-5 text-[#E63946]" aria-hidden="true" />
+      <div className="flex items-center gap-2 border-b-[2.5px] border-[#2D2D2D]/10 bg-[#A0522D]/5 px-5 py-3.5">
+        <Icon className="h-5 w-5 text-[#A0522D]" aria-hidden="true" />
         <h2 className="text-sm font-extrabold uppercase tracking-tight text-[#2D2D2D]">
           {title}
         </h2>
@@ -179,13 +176,13 @@ export default function RulesPage() {
           className="mb-6 flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-[#2D2D2D]/50"
           aria-label="Breadcrumb"
         >
-          <Link href="/" className="hover:text-[#E63946] transition-colors">
+          <Link href="/" className="hover:text-[#A0522D] transition-colors">
             Home
           </Link>
           <span>/</span>
           <Link
             href="/challenges/name-100-food"
-            className="hover:text-[#E63946] transition-colors"
+            className="hover:text-[#A0522D] transition-colors"
           >
             Name 100 Food
           </Link>
@@ -195,9 +192,9 @@ export default function RulesPage() {
 
         {/* Hero */}
         <header className="mb-10 text-center sm:mb-14">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border-[2.5px] border-[#2D2D2D] bg-[#E63946]/10 px-4 py-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-[#E63946]" />
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#E63946]">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border-[2.5px] border-[#2D2D2D] bg-[#A0522D]/10 px-4 py-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-[#A0522D]" />
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#A0522D]">
               🍽️ Name 100 Food Challenge
             </span>
           </div>
@@ -264,6 +261,11 @@ export default function RulesPage() {
                 },
                 {
                   icon: Ban,
+                  label: "Categories don't count",
+                  text: 'Broad category words like "fruit", "meat" or "drink" aren\'t accepted — name specific foods like Apple, Beef or Cola.',
+                },
+                {
+                  icon: Ban,
                   label: "Brands don't count",
                   text: "The challenge is about foods, not brands. Try the generic name — e.g. \"cola\" instead of a specific brand.",
                 },
@@ -275,7 +277,7 @@ export default function RulesPage() {
               ].map((rule) => (
                 <li key={rule.label} className="flex gap-3">
                   <rule.icon
-                    className="mt-0.5 h-5 w-5 shrink-0 text-[#E63946]"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-[#A0522D]"
                     aria-hidden="true"
                   />
                   <div>
@@ -340,9 +342,9 @@ export default function RulesPage() {
                 ].map(({ cat, examples }) => (
                   <div
                     key={cat}
-                    className="rounded-xl border-[2.5px] border-[#2D2D2D]/10 bg-[#E63946]/[0.03] px-3.5 py-2.5"
+                    className="rounded-xl border-[2.5px] border-[#2D2D2D]/10 bg-[#A0522D]/[0.03] px-3.5 py-2.5"
                   >
-                    <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[#E63946]">
+                    <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[#A0522D]">
                       {cat}
                     </span>
                     <span className="text-[11px] font-medium leading-relaxed text-[#2D2D2D]/55">
@@ -390,7 +392,7 @@ export default function RulesPage() {
                 },
               ].map(({ q, a }) => (
                 <details key={q} className="group py-3.5">
-                  <summary className="cursor-pointer text-sm font-extrabold uppercase tracking-tight text-[#2D2D2D] group-open:text-[#E63946] transition-colors list-none">
+                  <summary className="cursor-pointer text-sm font-extrabold uppercase tracking-tight text-[#2D2D2D] group-open:text-[#A0522D] transition-colors list-none">
                     {q}
                   </summary>
                   <p className="mt-2 text-sm font-medium leading-relaxed text-[#2D2D2D]/70">
@@ -405,10 +407,10 @@ export default function RulesPage() {
         {/* Bottom CTA */}
         <div className="mt-12 text-center">
           <div
-            className="overflow-hidden rounded-[24px] border-[2.5px] border-[#2D2D2D] bg-[#E63946]/5 px-6 py-8 sm:px-10 sm:py-10"
+            className="overflow-hidden rounded-[24px] border-[2.5px] border-[#2D2D2D] bg-[#A0522D]/5 px-6 py-8 sm:px-10 sm:py-10"
             style={{ boxShadow: "3px 5px 0 rgba(0,0,0,0.08)" }}
           >
-            <Sparkles className="mx-auto mb-3 h-6 w-6 text-[#E63946]" />
+            <Sparkles className="mx-auto mb-3 h-6 w-6 text-[#A0522D]" />
             <h2 className="font-extrabold text-xl uppercase tracking-tight text-[#2D2D2D] sm:text-2xl">
               Ready to Test Your Food Knowledge?
             </h2>

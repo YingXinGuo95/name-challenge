@@ -32,7 +32,7 @@ function getEntryStyle(entry: ValidatedName): {
   return {
     icon: <X className="h-4 w-4" />,
     label: "no",
-    bgColor: "bg-[#E63946]",
+    bgColor: "bg-[#A0522D]",
   };
 }
 

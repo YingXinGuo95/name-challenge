@@ -22,6 +22,11 @@ const rules = [
     text: "Each food counts once. Synonyms count as the same food — e.g. \"eggplant\" and \"aubergine\".",
   },
   {
+    icon: Ban,
+    label: "Categories don't count",
+    text: "Broad category words like \"fruit\", \"meat\" or \"drink\" aren't accepted — name specific foods like Apple, Beef or Cola.",
+  },
+  {
     icon: Timer,
     label: "Timer",
     text: "The clock starts with your first submission. Try to finish as fast as you can!",
@@ -79,7 +84,7 @@ export function GameRules() {
       {/* Link to full rules page */}
       <a
         href="/challenges/name-100-food/rules"
-        className="text-[11px] font-extrabold uppercase tracking-wider text-[#E63946] hover:underline"
+        className="text-[11px] font-extrabold uppercase tracking-wider text-[#A0522D] hover:underline"
       >
         Read full rules →
       </a>

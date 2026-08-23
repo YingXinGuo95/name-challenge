@@ -175,20 +175,20 @@ export function ChallengeGame() {
         <div className="space-y-4 text-center">
           {/* Decorative icon row */}
           <div className="flex items-center justify-center gap-2" aria-hidden="true">
-            <Sparkles className="h-4 w-4 text-[#E63946]/60" />
+            <Sparkles className="h-4 w-4 text-[#A0522D]/60" />
             <div className="retro-btn h-10 w-10 !rounded-xl text-lg">
               🍽️
             </div>
-            <Sparkles className="h-4 w-4 text-[#E63946]/60" />
+            <Sparkles className="h-4 w-4 text-[#A0522D]/60" />
           </div>
 
           {/* Title with "Food" highlighted */}
           <h1 className="text-4xl font-extrabold uppercase tracking-tight text-[#2D2D2D] sm:text-5xl">
             Name 100{" "}
             <span className="relative inline-block">
-              <span className="relative z-10 text-[#E63946]">Food</span>
+              <span className="relative z-10 text-[#A0522D]">Food</span>
               <span
-                className="absolute bottom-0 left-0 z-0 h-[10px] w-full rounded-full bg-[#E63946]/20"
+                className="absolute bottom-0 left-0 z-0 h-[10px] w-full rounded-full bg-[#A0522D]/20"
                 aria-hidden="true"
               />
             </span>
@@ -197,12 +197,18 @@ export function ChallengeGame() {
 
           <p className="mx-auto max-w-md text-sm font-medium leading-relaxed text-muted-foreground">
             How many{" "}
-            <strong className="font-extrabold uppercase text-[#E63946]">
+            <strong className="font-extrabold uppercase text-[#A0522D]">
               foods
             </strong>{" "}
             can you name — fruits, veggies, dishes, desserts &amp; more?
             <br className="hidden sm:block" />
             Type a food name and press Enter or click Add.
+            <br />
+            Categories like{" "}
+            <strong className="font-extrabold uppercase text-[#A0522D]">
+              "fruit" or "meat"
+            </strong>{" "}
+            don&apos;t count — name specific foods!
           </p>
         </div>
 
@@ -219,7 +225,7 @@ export function ChallengeGame() {
         {/* Error Banner */}
         {error && (
           <div
-            className="retro-card flex w-full max-w-xl items-center gap-2 bg-[#E63946]/30 px-5 py-3 text-sm font-bold text-[#2D2D2D]"
+            className="retro-card flex w-full max-w-xl items-center gap-2 bg-[#A0522D]/30 px-5 py-3 text-sm font-bold text-[#2D2D2D]"
             role="alert"
           >
             <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />

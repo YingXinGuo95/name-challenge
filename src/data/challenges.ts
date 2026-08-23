@@ -61,7 +61,7 @@ const challenges: Challenge[] = [
     emoji: "🍽️",
     description:
       "Name 100 foods — anything edible! Fruits, vegetables, meats, seafood, desserts, drinks & dishes from around the world. Verified by Wikidata.",
-    color: "bg-[#E63946]",
+    color: "bg-[#A0522D]",
   },
 ];
 

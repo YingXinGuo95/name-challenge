@@ -133,7 +133,7 @@ export default function ChallengePage() {
         className="mx-auto flex w-full max-w-7xl items-center gap-1.5 px-4 pt-5 text-[11px] font-extrabold uppercase tracking-wider text-[#2D2D2D]/50"
         aria-label="Breadcrumb"
       >
-        <Link href="/" className="hover:text-[#E63946] transition-colors">
+        <Link href="/" className="hover:text-[#A0522D] transition-colors">
           Home
         </Link>
         <span>/</span>
