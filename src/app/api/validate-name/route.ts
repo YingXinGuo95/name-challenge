@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cacheGet, cacheSet } from "@/app/challenges/name-100-women/_lib/cache";
 import { cacheGet as cacheGetAnimals, cacheSet as cacheSetAnimals } from "@/app/challenges/name-100-animals/_lib/cache";
 import { cacheGet as cacheGetMovies, cacheSet as cacheSetMovies } from "@/app/challenges/name-100-movies/_lib/cache";
+import { cacheGet as cacheGetFood, cacheSet as cacheSetFood } from "@/app/challenges/name-100-food/_lib/cache";
 import {
   validateWikidata,
   type Gender,
@@ -12,9 +13,13 @@ import {
 import {
   validateWikidata as validateMovieWikidata,
 } from "@/app/challenges/name-100-movies/_lib/sparql";
+import {
+  validateWikidata as validateFoodWikidata,
+} from "@/app/challenges/name-100-food/_lib/sparql";
 import { ValidateResponse } from "@/app/challenges/name-100-women/_lib/types";
 import { ValidateResponse as AnimalsValidateResponse } from "@/app/challenges/name-100-animals/_lib/types";
 import { ValidateResponse as MoviesValidateResponse } from "@/app/challenges/name-100-movies/_lib/types";
+import { ValidateResponse as FoodValidateResponse } from "@/app/challenges/name-100-food/_lib/types";
 import logger from "@/lib/logger";
 import { localLookup as localLookupWomen } from "@/app/challenges/name-100-women/_lib/famous-women";
 import config from "@/app/challenges/name-100-women/_lib/config";
@@ -22,6 +27,8 @@ import { localLookup as localLookupAnimals } from "@/app/challenges/name-100-ani
 import animalsConfig from "@/app/challenges/name-100-animals/_lib/config";
 import { localLookup as localLookupMovies } from "@/app/challenges/name-100-movies/_lib/famous-movies";
 import moviesConfig from "@/app/challenges/name-100-movies/_lib/config";
+import { localLookup as localLookupFood } from "@/app/challenges/name-100-food/_lib/food";
+import foodConfig from "@/app/challenges/name-100-food/_lib/config";
 
 // ── Rate Limiting (simple in-memory) ────────────────────────────────
 
@@ -74,6 +81,16 @@ async function queryMovieWikidata(name: string): Promise<{
 }> {
   logger.info({ name }, "Querying Wikidata for movies (REST API + SPARQL ASK)");
   return validateMovieWikidata(name);
+}
+
+async function queryFoodWikidata(name: string): Promise<{
+  valid: boolean;
+  qid?: string;
+  reason?: string;
+  display?: string;
+}> {
+  logger.info({ name }, "Querying Wikidata for foods (REST API)");
+  return validateFoodWikidata(name);
 }
 
 // ── API Handler ─────────────────────────────────────────────────────
@@ -236,6 +253,75 @@ export async function GET(request: NextRequest) {
 
       // --- Wikidata unreachable & not in local dataset → not_found ---
       logger.warn({ err: message, challenge }, "Wikidata unreachable, not in local dataset — marking as not_found (animals)");
+      return NextResponse.json({ valid: false, reason: "not_found" });
+    }
+  }
+
+  // ── Food Challenge ─────────────────────────────────────────────────
+
+  if (challenge === "food" || challenge === "name-100-food") {
+    const cacheKey = name.toLowerCase();
+
+    // --- Cache lookup ---
+    const cached = cacheGetFood(cacheKey);
+    if (cached) {
+      logger.info({ name, cacheKey, challenge }, "Cache hit (food)");
+      const response: FoodValidateResponse = { valid: cached.valid };
+      if (cached.qid) response.qid = cached.qid;
+      if (cached.display) response.display = cached.display;
+      return NextResponse.json(response);
+    }
+
+    // --- Step 1: Local dataset lookup (always checked first) ---
+    if (foodConfig.dataSource === "local") {
+      logger.info({ name, cacheKey, challenge }, "Local-only mode (food)");
+      const local = localLookupFood(name);
+      if (local) {
+        cacheSetFood(cacheKey, { valid: true, display: local.display });
+        return NextResponse.json({ valid: true, display: local.display });
+      }
+      return NextResponse.json({ valid: false, reason: "not_found" });
+    }
+
+    const localMatch = localLookupFood(name);
+    if (localMatch) {
+      logger.info({ name, cacheKey, challenge }, "Local dataset hit (food)");
+      cacheSetFood(cacheKey, { valid: true, display: localMatch.display });
+      return NextResponse.json({ valid: true, display: localMatch.display });
+    }
+
+    // --- Step 2: Query Wikidata for foods not in the local dataset ---
+    logger.info({ name, cacheKey, challenge }, "Not in local dataset — fetching from Wikidata (food)");
+
+    try {
+      const result = await queryFoodWikidata(name);
+
+      if (result.valid) {
+        cacheSetFood(cacheKey, {
+          valid: true,
+          qid: result.qid,
+          display: result.display,
+        });
+      }
+
+      const response: FoodValidateResponse = { valid: result.valid };
+      if (result.qid) response.qid = result.qid;
+      if (result.display) response.display = result.display;
+      if (result.reason) response.reason = result.reason as FoodValidateResponse["reason"];
+
+      return NextResponse.json(response);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+
+      if (message === "rate_limited") {
+        return NextResponse.json(
+          { error: "rate_limited", retryAfter: 10 },
+          { status: 429 }
+        );
+      }
+
+      // --- Wikidata unreachable & not in local dataset → not_found ---
+      logger.warn({ err: message, challenge }, "Wikidata unreachable, not in local dataset — marking as not_found (food)");
       return NextResponse.json({ valid: false, reason: "not_found" });
     }
   }

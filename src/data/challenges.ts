@@ -55,6 +55,14 @@ const challenges: Challenge[] = [
       "Name 100 famous movies — verified by Wikidata. From timeless classics to modern blockbusters, Oscars winners to cult hits!",
     color: "bg-[#9333EA]",
   },
+  {
+    slug: "name-100-food",
+    title: "Name 100 Food",
+    emoji: "🍽️",
+    description:
+      "Name 100 foods — anything edible! Fruits, vegetables, meats, seafood, desserts, drinks & dishes from around the world. Verified by Wikidata.",
+    color: "bg-[#E63946]",
+  },
 ];
 
 export default challenges;
